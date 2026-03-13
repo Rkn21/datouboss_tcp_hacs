@@ -49,8 +49,8 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
             "battery_type": data["qpiri"].get("battery_type"),
             "battery_type_code": data["qpiri"].get("battery_type_code"),
             "supported_range": [42.0, 48.0],
-            "requires_battery_type": "user",
-            "writable": data["qpiri"].get("battery_type") == "user",
+            "requires_battery_type": "custom",
+            "writable": data["qpiri"].get("battery_type") == "custom",
         },
     ),
     DatoubossNumberDescription(
@@ -68,8 +68,8 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         available_fn=lambda data: data["qpiri"].get("battery_recharge_voltage") is not None,
         attributes_fn=lambda data: {
             "battery_type": data["qpiri"].get("battery_type"),
-            "requires_battery_type": "user",
-            "writable": data["qpiri"].get("battery_type") == "user",
+            "requires_battery_type": "custom",
+            "writable": data["qpiri"].get("battery_type") == "custom",
         },
     ),
     DatoubossNumberDescription(
@@ -87,8 +87,8 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         available_fn=lambda data: data["qpiri"].get("battery_redischarge_voltage") is not None,
         attributes_fn=lambda data: {
             "battery_type": data["qpiri"].get("battery_type"),
-            "requires_battery_type": "user",
-            "writable": data["qpiri"].get("battery_type") == "user",
+            "requires_battery_type": "custom",
+            "writable": data["qpiri"].get("battery_type") == "custom",
         },
     ),
     DatoubossNumberDescription(
@@ -106,8 +106,8 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         available_fn=lambda data: data["qpiri"].get("battery_bulk_voltage") is not None,
         attributes_fn=lambda data: {
             "battery_type": data["qpiri"].get("battery_type"),
-            "requires_battery_type": "user",
-            "writable": data["qpiri"].get("battery_type") == "user",
+            "requires_battery_type": "custom",
+            "writable": data["qpiri"].get("battery_type") == "custom",
         },
     ),
     DatoubossNumberDescription(
@@ -125,8 +125,8 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         available_fn=lambda data: data["qpiri"].get("battery_float_voltage") is not None,
         attributes_fn=lambda data: {
             "battery_type": data["qpiri"].get("battery_type"),
-            "requires_battery_type": "user",
-            "writable": data["qpiri"].get("battery_type") == "user",
+            "requires_battery_type": "custom",
+            "writable": data["qpiri"].get("battery_type") == "custom",
         },
     ),
     DatoubossNumberDescription(

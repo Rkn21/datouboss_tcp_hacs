@@ -166,10 +166,10 @@ def _get_loaded_runtime_data(hass: HomeAssistant, config_entry_id: str) -> Datou
     return cast(DatoubossRuntimeData, entry.runtime_data)
 
 
-def _require_user_battery(runtime: DatoubossRuntimeData) -> None:
-    if runtime.coordinator.data["qpiri"].get("battery_type") != "user":
+def _require_custom_battery(runtime: DatoubossRuntimeData) -> None:
+    if runtime.coordinator.data["qpiri"].get("battery_type") != "custom":
         raise ServiceValidationError(
-            "This setting can only be changed when battery type is set to user"
+            "This setting can only be changed when battery type is set to custom"
         )
 
 
@@ -210,12 +210,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     def build_voltage_service(
         command_template: str,
         *,
-        require_user_battery: bool = False,
+        require_custom_battery: bool = False,
     ):
         async def async_set_voltage(call: ServiceCall) -> ServiceResponse:
             runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
-            if require_user_battery:
-                _require_user_battery(runtime)
+            if require_custom_battery:
+                _require_custom_battery(runtime)
             voltage = round(float(call.data[ATTR_VOLTAGE]), 1)
             payload = await runtime.coordinator.async_send_write_command(
                 command_template.format(voltage=voltage)
@@ -284,23 +284,23 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     async_set_battery_under_voltage = build_voltage_service(
         "PSDV{voltage:.1f}",
-        require_user_battery=True,
+        require_custom_battery=True,
     )
     async_set_battery_recharge_voltage = build_voltage_service(
         "PBCV{voltage:.1f}",
-        require_user_battery=True,
+        require_custom_battery=True,
     )
     async_set_battery_redischarge_voltage = build_voltage_service(
         "PBDV{voltage:.1f}",
-        require_user_battery=True,
+        require_custom_battery=True,
     )
     async_set_battery_bulk_voltage = build_voltage_service(
         "PCVV{voltage:.1f}",
-        require_user_battery=True,
+        require_custom_battery=True,
     )
     async_set_battery_float_voltage = build_voltage_service(
         "PBFT{voltage:.1f}",
-        require_user_battery=True,
+        require_custom_battery=True,
     )
     async_set_battery_equalization_voltage = build_voltage_service("PBEQV{voltage:.2f}")
 

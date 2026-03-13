@@ -73,21 +73,21 @@ CHARGER_SOURCE_PRIORITY_MAP = {
 CHARGER_SOURCE_PRIORITY_REVERSE = {value: key for key, value in CHARGER_SOURCE_PRIORITY_MAP.items()}
 
 AC_INPUT_RANGE_MAP = {
-    "appliance": "00",
-    "ups": "01",
+    "APL (20ms/90-280 Vac)": "00",
+    "UPS (10ms/170-280 Vac)": "01",
 }
 AC_INPUT_RANGE_REVERSE = {value: key for key, value in AC_INPUT_RANGE_MAP.items()}
 
 BATTERY_TYPE_REVERSE = {
     "0": "agm",
     "1": "flooded",
-    "2": "user",
+    "2": "custom",
     "3": "lithium",
 }
 BATTERY_TYPE_MAP = {
     "agm": "00",
     "flooded": "01",
-    "user": "02",
+    "custom": "02",
 }
 
 MACHINE_TYPE_REVERSE = {
@@ -115,14 +115,14 @@ PV_OK_CONDITION_REVERSE = {
 }
 
 OUTPUT_VOLTAGE_MAP = {
-    "220": "V220",
-    "230": "V230",
-    "240": "V240",
+    "220 V": "V220",
+    "230 V": "V230",
+    "240 V": "V240",
 }
 
 OUTPUT_FREQUENCY_MAP = {
-    "50": "F50",
-    "60": "F60",
+    "50 Hz": "F50",
+    "60 Hz": "F60",
 }
 
 QFLAG_ENTITY_MAP = {

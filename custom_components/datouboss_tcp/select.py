@@ -8,6 +8,7 @@ from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -39,6 +40,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="battery_type_setting",
         translation_key="battery_type_setting",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type"),
         command_fn=lambda option: f"PBT{BATTERY_TYPE_MAP[option]}",
         options_fn=lambda coordinator: _options_with_current(
@@ -82,13 +84,15 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="output_voltage_setting",
         translation_key="output_voltage_setting",
-        current_option_fn=lambda coordinator: _format_integerish_option(
+        entity_category=EntityCategory.CONFIG,
+        current_option_fn=lambda coordinator: _format_value_with_unit(
             coordinator.data["qpiri"].get("ac_output_rating_voltage")
+            ,"V"
         ),
         command_fn=lambda option: OUTPUT_VOLTAGE_MAP[option],
         options_fn=lambda coordinator: _options_with_current(
             list(OUTPUT_VOLTAGE_MAP.keys()),
-            _format_integerish_option(coordinator.data["qpiri"].get("ac_output_rating_voltage")),
+            _format_value_with_unit(coordinator.data["qpiri"].get("ac_output_rating_voltage"), "V"),
         ),
         attributes_fn=lambda coordinator: {
             "current_voltage": coordinator.data["qpiri"].get("ac_output_rating_voltage"),
@@ -98,13 +102,15 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="output_frequency_setting",
         translation_key="output_frequency_setting",
-        current_option_fn=lambda coordinator: _format_integerish_option(
+        entity_category=EntityCategory.CONFIG,
+        current_option_fn=lambda coordinator: _format_value_with_unit(
             coordinator.data["qpiri"].get("ac_output_rating_frequency")
+            ,"Hz"
         ),
         command_fn=lambda option: OUTPUT_FREQUENCY_MAP[option],
         options_fn=lambda coordinator: _options_with_current(
             list(OUTPUT_FREQUENCY_MAP.keys()),
-            _format_integerish_option(coordinator.data["qpiri"].get("ac_output_rating_frequency")),
+            _format_value_with_unit(coordinator.data["qpiri"].get("ac_output_rating_frequency"), "Hz"),
         ),
         attributes_fn=lambda coordinator: {
             "current_frequency": coordinator.data["qpiri"].get("ac_output_rating_frequency"),
@@ -128,21 +134,37 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="max_ac_charge_current",
         translation_key="max_ac_charge_current",
-        current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_ac_charge_current")),
-        command_fn=lambda option: f"MUCHGC{int(option):03d}",
-        options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])],
+        current_option_fn=lambda coordinator: _format_value_with_unit(
+            coordinator.data["qpiri"].get("max_ac_charge_current"), "A"
+        ),
+        command_fn=lambda option: f"MUCHGC{_parse_numeric_option(option):03d}",
+        options_fn=lambda coordinator: _options_with_current(
+            [f"{value} A" for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])],
+            _format_value_with_unit(coordinator.data["qpiri"].get("max_ac_charge_current"), "A"),
+        ),
         attributes_fn=lambda coordinator: {
             "supported_values": coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60],
+            "writable_options": [
+                f"{value} A" for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])
+            ],
         },
     ),
     DatoubossSelectDescription(
         key="max_total_charge_current",
         translation_key="max_total_charge_current",
-        current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_total_charge_current")),
-        command_fn=lambda option: f"MCHGC{int(option):03d}",
-        options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])],
+        current_option_fn=lambda coordinator: _format_value_with_unit(
+            coordinator.data["qpiri"].get("max_total_charge_current"), "A"
+        ),
+        command_fn=lambda option: f"MCHGC{_parse_numeric_option(option):03d}",
+        options_fn=lambda coordinator: _options_with_current(
+            [f"{value} A" for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])],
+            _format_value_with_unit(coordinator.data["qpiri"].get("max_total_charge_current"), "A"),
+        ),
         attributes_fn=lambda coordinator: {
             "supported_values": coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100],
+            "writable_options": [
+                f"{value} A" for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])
+            ],
         },
     ),
 )
@@ -225,6 +247,17 @@ def _format_integerish_option(value: Any) -> str | None:
         return str(int(float(value)))
     except (TypeError, ValueError):
         return str(value)
+
+
+def _format_value_with_unit(value: Any, unit: str) -> str | None:
+    formatted = _format_integerish_option(value)
+    if formatted is None:
+        return None
+    return f"{formatted} {unit}"
+
+
+def _parse_numeric_option(option: str) -> int:
+    return int(float(option.split()[0]))
 
 
 def _options_with_current(options: list[str], current: str | None) -> list[str]:

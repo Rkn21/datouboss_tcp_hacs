@@ -109,13 +109,13 @@
     },
     "select": {
       "battery_type_setting": {"name": "Réglage type de batterie"},
-      "output_voltage_setting": {"name": "Réglage tension sortie"},
-      "output_frequency_setting": {"name": "Réglage fréquence sortie"},
+      "output_voltage_setting": {"name": "Réglage tension sortie (V)"},
+      "output_frequency_setting": {"name": "Réglage fréquence sortie (Hz)"},
       "output_source_priority": {"name": "Priorité source sortie"},
       "charger_source_priority": {"name": "Priorité source charge"},
       "ac_input_range": {"name": "Plage entrée AC"},
-      "max_ac_charge_current": {"name": "Courant max charge AC"},
-      "max_total_charge_current": {"name": "Courant max charge total"}
+      "max_ac_charge_current": {"name": "Courant max charge AC (A)"},
+      "max_total_charge_current": {"name": "Courant max charge total (A)"}
     },
     "switch": {
       "buzzer_alarm": {"name": "Alarme buzzer"},
@@ -200,7 +200,7 @@
       "description": "Définit le type de batterie via les valeurs publiques PBT.",
       "fields": {
         "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "mode": {"name": "Mode"}
+        "mode": {"name": "Type de batterie"}
       }
     },
     "set_output_voltage": {
@@ -208,7 +208,7 @@
       "description": "Définit la tension AC de sortie.",
       "fields": {
         "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "mode": {"name": "Tension"}
+        "mode": {"name": "Tension (V)"}
       }
     },
     "set_output_frequency": {
@@ -216,15 +216,15 @@
       "description": "Définit la fréquence AC de sortie.",
       "fields": {
         "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "mode": {"name": "Fréquence"}
+        "mode": {"name": "Fréquence (Hz)"}
       }
     },
     "set_battery_recharge_voltage": {
       "name": "Définir la tension retour en charge batterie",
-      "description": "Définit la tension de retour en charge via PBCV.",
+      "description": "Définit la tension de retour en charge via PBCV. Réservé au type de batterie custom.",
       "fields": {
         "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension"}
+        "voltage": {"name": "Tension (V)"}
       }
     },
     "set_battery_redischarge_voltage": {
@@ -232,7 +232,7 @@
       "description": "Définit la tension de retour en décharge via PBDV.",
       "fields": {
         "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension"}
+        "voltage": {"name": "Tension (V)"}
       }
     },
     "set_battery_bulk_voltage": {
@@ -240,7 +240,7 @@
       "description": "Définit la tension bulk de charge via PCVV.",
       "fields": {
         "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension"}
+        "voltage": {"name": "Tension (V)"}
       }
     },
     "set_battery_float_voltage": {

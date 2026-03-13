@@ -109,13 +109,13 @@
     },
     "select": {
       "battery_type_setting": {"name": "Battery type setting"},
-      "output_voltage_setting": {"name": "Output voltage setting"},
-      "output_frequency_setting": {"name": "Output frequency setting"},
+      "output_voltage_setting": {"name": "Output voltage setting (V)"},
+      "output_frequency_setting": {"name": "Output frequency setting (Hz)"},
       "output_source_priority": {"name": "Output source priority"},
       "charger_source_priority": {"name": "Charger source priority"},
       "ac_input_range": {"name": "AC input range"},
-      "max_ac_charge_current": {"name": "Max AC charge current"},
-      "max_total_charge_current": {"name": "Max total charge current"}
+      "max_ac_charge_current": {"name": "Max AC charge current (A)"},
+      "max_total_charge_current": {"name": "Max total charge current (A)"}
     },
     "switch": {
       "buzzer_alarm": {"name": "Buzzer alarm"},
@@ -200,7 +200,7 @@
       "description": "Set the battery type using the public PBT command values.",
       "fields": {
         "config_entry_id": {"name": "Config entry ID"},
-        "mode": {"name": "Mode"}
+        "mode": {"name": "Battery type"}
       }
     },
     "set_output_voltage": {
@@ -208,7 +208,7 @@
       "description": "Set the AC output voltage.",
       "fields": {
         "config_entry_id": {"name": "Config entry ID"},
-        "mode": {"name": "Voltage"}
+        "mode": {"name": "Voltage (V)"}
       }
     },
     "set_output_frequency": {
@@ -216,15 +216,15 @@
       "description": "Set the AC output frequency.",
       "fields": {
         "config_entry_id": {"name": "Config entry ID"},
-        "mode": {"name": "Frequency"}
+        "mode": {"name": "Frequency (Hz)"}
       }
     },
     "set_battery_recharge_voltage": {
       "name": "Set battery recharge voltage",
-      "description": "Set the back-to-charge voltage using PBCV.",
+      "description": "Set the back-to-charge voltage using PBCV. Intended for custom battery type.",
       "fields": {
         "config_entry_id": {"name": "Config entry ID"},
-        "voltage": {"name": "Voltage"}
+        "voltage": {"name": "Voltage (V)"}
       }
     },
     "set_battery_redischarge_voltage": {
@@ -232,7 +232,7 @@
       "description": "Set the back-to-discharge voltage using PBDV.",
       "fields": {
         "config_entry_id": {"name": "Config entry ID"},
-        "voltage": {"name": "Voltage"}
+        "voltage": {"name": "Voltage (V)"}
       }
     },
     "set_battery_bulk_voltage": {
@@ -240,7 +240,7 @@
       "description": "Set the bulk charging voltage using PCVV.",
       "fields": {
         "config_entry_id": {"name": "Config entry ID"},
-        "voltage": {"name": "Voltage"}
+        "voltage": {"name": "Voltage (V)"}
       }
     },
     "set_battery_float_voltage": {

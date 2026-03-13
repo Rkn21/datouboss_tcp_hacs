@@ -77,8 +77,8 @@ set_ac_input_range:
       selector:
         select:
           options:
-            - appliance
-            - ups
+            - APL (20ms/90-280 Vac)
+            - UPS (10ms/170-280 Vac)
 
 set_max_ac_charge_current:
   name: Set max AC charge current
@@ -114,7 +114,7 @@ set_max_total_charge_current:
 
 set_battery_under_voltage:
   name: Set battery under voltage
-  description: Set the battery cut-off voltage using the PSDV command. Intended for user-defined battery type.
+  description: Set the battery cut-off voltage using the PSDV command. Intended for custom battery type.
   fields:
     config_entry_id:
       required: true
@@ -248,7 +248,7 @@ set_battery_type:
           options:
             - agm
             - flooded
-            - user
+            - custom
 
 set_output_voltage:
   name: Set output voltage
@@ -263,9 +263,9 @@ set_output_voltage:
       selector:
         select:
           options:
-            - "220"
-            - "230"
-            - "240"
+            - "220 V"
+            - "230 V"
+            - "240 V"
 
 set_output_frequency:
   name: Set output frequency
@@ -280,12 +280,12 @@ set_output_frequency:
       selector:
         select:
           options:
-            - "50"
-            - "60"
+            - "50 Hz"
+            - "60 Hz"
 
 set_battery_recharge_voltage:
   name: Set battery recharge voltage
-  description: Set the back-to-charge voltage using PBCV. Intended for user-defined battery type.
+  description: Set the back-to-charge voltage using PBCV. Intended for custom battery type.
   fields:
     config_entry_id:
       required: true
