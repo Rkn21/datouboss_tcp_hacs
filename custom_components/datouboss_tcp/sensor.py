@@ -322,6 +322,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:battery-cog",
         value_fn=lambda data: data["qpiri"].get("battery_type"),
+        attributes_fn=lambda data: {"code": data["qpiri"].get("battery_type_code")},
     ),
     DatoubossSensorDescription(
         key="parallel_max_num",
@@ -336,6 +337,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:identifier",
         value_fn=lambda data: data["qpiri"].get("machine_type"),
+        attributes_fn=lambda data: {"code": data["qpiri"].get("machine_type_code")},
     ),
     DatoubossSensorDescription(
         key="topology",
@@ -343,6 +345,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:sitemap",
         value_fn=lambda data: data["qpiri"].get("topology"),
+        attributes_fn=lambda data: {"code": data["qpiri"].get("topology_code")},
     ),
     DatoubossSensorDescription(
         key="output_mode",
@@ -350,6 +353,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:export",
         value_fn=lambda data: data["qpiri"].get("output_mode"),
+        attributes_fn=lambda data: {"code": data["qpiri"].get("output_mode_code")},
     ),
     DatoubossSensorDescription(
         key="battery_redischarge_voltage",
@@ -365,6 +369,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:solar-power-variant",
         value_fn=lambda data: data["qpiri"].get("pv_ok_condition"),
+        attributes_fn=lambda data: {"code": data["qpiri"].get("pv_ok_condition_code")},
     ),
     DatoubossSensorDescription(
         key="qpigs_snapshot",

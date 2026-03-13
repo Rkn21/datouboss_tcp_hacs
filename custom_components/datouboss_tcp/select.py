@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -24,9 +25,10 @@ from .coordinator import DatoubossRuntimeData
 
 @dataclass(frozen=True, kw_only=True)
 class DatoubossSelectDescription(SelectEntityDescription):
-    current_option_fn: callable
-    command_fn: callable
-    options_fn: callable
+    current_option_fn: Callable[[Any], str | None]
+    command_fn: Callable[[str], str]
+    options_fn: Callable[[Any], list[str]]
+    attributes_fn: Callable[[Any], dict[str, Any] | None] | None = None
 
 
 SELECTS: tuple[DatoubossSelectDescription, ...] = (
@@ -36,6 +38,10 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("output_source_priority"),
         command_fn=lambda option: f"POP{OUTPUT_SOURCE_PRIORITY_MAP[option]}",
         options_fn=lambda coordinator: list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+        attributes_fn=lambda coordinator: {
+            "code": coordinator.data["qpiri"].get("output_source_priority_code"),
+            "options": list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+        },
     ),
     DatoubossSelectDescription(
         key="charger_source_priority",
@@ -43,6 +49,10 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("charger_source_priority"),
         command_fn=lambda option: f"PCP{CHARGER_SOURCE_PRIORITY_MAP[option]}",
         options_fn=lambda coordinator: list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+        attributes_fn=lambda coordinator: {
+            "code": coordinator.data["qpiri"].get("charger_source_priority_code"),
+            "options": list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+        },
     ),
     DatoubossSelectDescription(
         key="ac_input_range",
@@ -50,6 +60,10 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("ac_input_range"),
         command_fn=lambda option: f"PGR{AC_INPUT_RANGE_MAP[option]}",
         options_fn=lambda coordinator: list(AC_INPUT_RANGE_MAP.keys()),
+        attributes_fn=lambda coordinator: {
+            "code": coordinator.data["qpiri"].get("ac_input_range_code"),
+            "options": list(AC_INPUT_RANGE_MAP.keys()),
+        },
     ),
     DatoubossSelectDescription(
         key="max_ac_charge_current",
@@ -57,6 +71,9 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_ac_charge_current")),
         command_fn=lambda option: f"MUCHGC{int(option):03d}",
         options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])],
+        attributes_fn=lambda coordinator: {
+            "supported_values": coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60],
+        },
     ),
     DatoubossSelectDescription(
         key="max_total_charge_current",
@@ -64,6 +81,9 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_total_charge_current")),
         command_fn=lambda option: f"MCHGC{int(option):03d}",
         options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])],
+        attributes_fn=lambda coordinator: {
+            "supported_values": coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100],
+        },
     ),
 )
 
@@ -115,6 +135,12 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
     @property
     def options(self) -> list[str]:
         return self.entity_description.options_fn(self.coordinator)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if self.entity_description.attributes_fn is not None:
+            return self.entity_description.attributes_fn(self.coordinator)
+        return None
 
     async def async_select_option(self, option: str) -> None:
         await self.runtime.coordinator.async_send_write_command(

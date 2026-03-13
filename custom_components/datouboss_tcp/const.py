@@ -52,6 +52,37 @@ AC_INPUT_RANGE_MAP = {
 }
 AC_INPUT_RANGE_REVERSE = {value: key for key, value in AC_INPUT_RANGE_MAP.items()}
 
+BATTERY_TYPE_REVERSE = {
+    "0": "agm",
+    "1": "flooded",
+    "2": "user",
+    "3": "lithium",
+}
+
+MACHINE_TYPE_REVERSE = {
+    "00": "grid_tie",
+    "01": "off_grid",
+    "10": "hybrid",
+}
+
+TOPOLOGY_REVERSE = {
+    "0": "transformerless",
+    "1": "transformer",
+}
+
+OUTPUT_MODE_REVERSE = {
+    "0": "single_machine",
+    "1": "parallel_output",
+    "2": "phase_1_of_3_phase",
+    "3": "phase_2_of_3_phase",
+    "4": "phase_3_of_3_phase",
+}
+
+PV_OK_CONDITION_REVERSE = {
+    "0": "pv_ok_if_one_inverter_has_pv",
+    "1": "pv_ok_if_all_inverters_have_pv",
+}
+
 INVERTER_MODE_MAP = {
     "P": "power_on",
     "S": "standby",

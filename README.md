@@ -36,6 +36,8 @@ This integration polls the inverter over TCP, parses the common Voltronic/Axpert
   - AC input range
   - max AC charge current
   - max total charge current
+
+Only parameters with a verified write command are exposed as Home Assistant controls. Other `QPIRI` values are still exposed as sensors until their corresponding write commands are confirmed.
 - Service actions for sending commands:
   - `datouboss_tcp.send_command`
   - `datouboss_tcp.refresh`
@@ -48,6 +50,57 @@ This integration polls the inverter over TCP, parses the common Voltronic/Axpert
 ## Tested protocol basis
 
 This integration is built around the Voltronic-compatible command set used by many Datouboss / Axpert-like inverters, including commands such as `QID`, `QMOD`, `QPIGS`, `QPIRI`, `QPIWS`, `QMCHGCR`, and `QMUCHGCR`.
+
+### QPIRI reference
+
+`QPIRI` is parsed as nominal and configuration data in this order:
+
+1. AC input rating voltage
+2. AC input rating current
+3. AC output rating voltage
+4. AC output rating frequency
+5. AC output rating current
+6. AC output rating apparent power
+7. AC output rating active power
+8. Battery rating voltage
+9. Battery recharge voltage
+10. Battery under voltage
+11. Battery bulk voltage
+12. Battery float voltage
+13. Battery type
+14. Max AC charge current
+15. Max total charge current
+16. AC input voltage range
+17. Output source priority
+18. Charger source priority
+19. Parallel max number
+20. Machine type
+21. Topology
+22. Output mode
+23. Battery redischarge voltage
+24. PV OK condition
+
+Known interpretations used by the integration include:
+
+- Battery type: `0=agm`, `1=flooded`, `2=user`, `3=lithium`
+- AC input range: `00=appliance`, `01=ups`
+- Output source priority: `00=utility_first`, `01=solar_first`, `02=sbu_priority`
+- Charger source priority: `00=utility_first`, `01=solar_first`, `02=solar_and_utility`, `03=solar_only`
+- Machine type: `00=grid_tie`, `01=off_grid`, `10=hybrid`
+- Topology: `0=transformerless`, `1=transformer`
+- Output mode: `0=single_machine`, `1=parallel_output`, `2=phase_1_of_3_phase`, `3=phase_2_of_3_phase`, `4=phase_3_of_3_phase`
+- PV OK condition: `0=pv_ok_if_one_inverter_has_pv`, `1=pv_ok_if_all_inverters_have_pv`
+
+Example for the frame `240.0 25.8 240.0 50.0 25.8 6200 6200 48.0 50.0 44.8 58.4 54.0 2 02 050 1 2 1 9 01 0 0 54.0 1`:
+
+- Battery type: `2 -> user`
+- AC input range: `1 -> ups`
+- Output source priority: `2 -> sbu_priority`
+- Charger source priority: `1 -> solar_first`
+- Machine type: `01 -> off_grid`
+- Topology: `0 -> transformerless`
+- Output mode: `0 -> single_machine`
+- PV OK condition: `1 -> pv_ok_if_all_inverters_have_pv`
 
 ## Installation with HACS
 

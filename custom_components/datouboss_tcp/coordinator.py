@@ -13,9 +13,14 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .client import DatoubossCommandError, DatoubossError, DatoubossTcpClient
 from .const import (
     AC_INPUT_RANGE_REVERSE,
+    BATTERY_TYPE_REVERSE,
     CHARGER_SOURCE_PRIORITY_REVERSE,
     INVERTER_MODE_MAP,
+    MACHINE_TYPE_REVERSE,
     OUTPUT_SOURCE_PRIORITY_REVERSE,
+    OUTPUT_MODE_REVERSE,
+    PV_OK_CONDITION_REVERSE,
+    TOPOLOGY_REVERSE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -143,9 +148,38 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _parse_qpiri(self, payload: str) -> dict[str, Any]:
         parts = payload.lstrip("(").split()
-        output_priority_code = parts[16] if len(parts) > 16 else None
-        charge_priority_code = parts[17] if len(parts) > 17 else None
-        ac_input_range_code = parts[15] if len(parts) > 15 else None
+        battery_type_code = self._normalize_protocol_code(
+            parts[12] if len(parts) > 12 else None,
+            width=1,
+        )
+        ac_input_range_code = self._normalize_protocol_code(
+            parts[15] if len(parts) > 15 else None,
+            width=2,
+        )
+        output_priority_code = self._normalize_protocol_code(
+            parts[16] if len(parts) > 16 else None,
+            width=2,
+        )
+        charge_priority_code = self._normalize_protocol_code(
+            parts[17] if len(parts) > 17 else None,
+            width=2,
+        )
+        machine_type_code = self._normalize_protocol_code(
+            parts[19] if len(parts) > 19 else None,
+            width=2,
+        )
+        topology_code = self._normalize_protocol_code(
+            parts[20] if len(parts) > 20 else None,
+            width=1,
+        )
+        output_mode_code = self._normalize_protocol_code(
+            parts[21] if len(parts) > 21 else None,
+            width=1,
+        )
+        pv_ok_condition_code = self._normalize_protocol_code(
+            parts[23] if len(parts) > 23 else None,
+            width=1,
+        )
 
         data: dict[str, Any] = {
             "grid_rating_voltage": self._to_float(parts, 0),
@@ -160,7 +194,8 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "battery_under_voltage": self._to_float(parts, 9),
             "battery_bulk_voltage": self._to_float(parts, 10),
             "battery_float_voltage": self._to_float(parts, 11),
-            "battery_type": parts[12] if len(parts) > 12 else None,
+            "battery_type_code": battery_type_code,
+            "battery_type": BATTERY_TYPE_REVERSE.get(battery_type_code, battery_type_code),
             "max_ac_charge_current": self._to_int(parts, 13),
             "max_total_charge_current": self._to_int(parts, 14),
             "ac_input_range_code": ac_input_range_code,
@@ -174,11 +209,17 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 charge_priority_code, charge_priority_code
             ),
             "parallel_max_num": self._to_int(parts, 18),
-            "machine_type": parts[19] if len(parts) > 19 else None,
-            "topology": parts[20] if len(parts) > 20 else None,
-            "output_mode": parts[21] if len(parts) > 21 else None,
+            "machine_type_code": machine_type_code,
+            "machine_type": MACHINE_TYPE_REVERSE.get(machine_type_code, machine_type_code),
+            "topology_code": topology_code,
+            "topology": TOPOLOGY_REVERSE.get(topology_code, topology_code),
+            "output_mode_code": output_mode_code,
+            "output_mode": OUTPUT_MODE_REVERSE.get(output_mode_code, output_mode_code),
             "battery_redischarge_voltage": self._to_float(parts, 22),
-            "pv_ok_condition": parts[23] if len(parts) > 23 else None,
+            "pv_ok_condition_code": pv_ok_condition_code,
+            "pv_ok_condition": PV_OK_CONDITION_REVERSE.get(
+                pv_ok_condition_code, pv_ok_condition_code
+            ),
         }
         return data
 
@@ -195,6 +236,18 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return int(parts[index])
         except (IndexError, ValueError):
             return None
+
+    @staticmethod
+    def _normalize_protocol_code(code: str | None, *, width: int) -> str | None:
+        if code is None:
+            return None
+
+        normalized = code.strip()
+        if not normalized:
+            return None
+        if normalized.isdigit():
+            return normalized.zfill(width)
+        return normalized
 
     @staticmethod
     def _parse_device_status_bits(bitfield: str | None) -> dict[str, Any] | None:
