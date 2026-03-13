@@ -112,6 +112,8 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _parse_qpigs(self, payload: str) -> dict[str, Any]:
         parts = payload.lstrip("(").split()
+        device_status_bits = parts[16] if len(parts) > 16 else None
+        device_status_bits_2 = parts[20] if len(parts) > 20 else None
         data: dict[str, Any] = {
             "grid_voltage": self._to_float(parts, 0),
             "grid_frequency": self._to_float(parts, 1),
@@ -129,11 +131,13 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "pv_input_voltage": self._to_float(parts, 13),
             "scc_battery_voltage": self._to_float(parts, 14),
             "battery_discharge_current": self._to_int(parts, 15),
-            "device_status_bits": parts[16] if len(parts) > 16 else None,
+            "device_status_bits": device_status_bits,
+            "device_status": self._parse_device_status_bits(device_status_bits),
             "fan_offset": parts[17] if len(parts) > 17 else None,
             "eeprom_version": parts[18] if len(parts) > 18 else None,
             "pv_output_power": self._to_int(parts, 19),
-            "device_status_bits_2": parts[20] if len(parts) > 20 else None,
+            "device_status_bits_2": device_status_bits_2,
+            "device_status_2": self._parse_device_status_bits_2(device_status_bits_2),
         }
         return data
 
@@ -191,6 +195,78 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return int(parts[index])
         except (IndexError, ValueError):
             return None
+
+    @staticmethod
+    def _parse_device_status_bits(bitfield: str | None) -> dict[str, Any] | None:
+        if bitfield is None or len(bitfield) < 8:
+            return None
+
+        bits = {
+            7: bitfield[0],
+            6: bitfield[1],
+            5: bitfield[2],
+            4: bitfield[3],
+            3: bitfield[4],
+            2: bitfield[5],
+            1: bitfield[6],
+            0: bitfield[7],
+        }
+        charge_mode_bits = f"{bits[2]}{bits[1]}{bits[0]}"
+        charge_mode_map = {
+            "000": "inactive",
+            "001": "ac_only",
+            "010": "scc_only",
+            "011": "scc_and_ac",
+            "100": "charge_active_unknown_source",
+            "101": "charge_active_ac_only",
+            "110": "charge_active_scc_only",
+            "111": "charge_active_scc_and_ac",
+        }
+
+        return {
+            "bitfield": bitfield,
+            "output_active": bits[4] == "1",
+            "charge_active": bits[2] == "1",
+            "scc_charging": bits[1] == "1",
+            "ac_charging": bits[0] == "1",
+            "charge_mode_bits": charge_mode_bits,
+            "charge_mode": charge_mode_map.get(charge_mode_bits, "unknown"),
+            "configuration_changed": bits[6] == "1",
+            "sbu_priority_flag": bits[7] == "1",
+            "flags": {
+                "b7": bits[7],
+                "b6": bits[6],
+                "b5": bits[5],
+                "b4": bits[4],
+                "b3": bits[3],
+                "b2": bits[2],
+                "b1": bits[1],
+                "b0": bits[0],
+            },
+        }
+
+    @staticmethod
+    def _parse_device_status_bits_2(bitfield: str | None) -> dict[str, Any] | None:
+        if bitfield is None or len(bitfield) < 3:
+            return None
+
+        bits = {
+            10: bitfield[0],
+            9: bitfield[1],
+            8: bitfield[2],
+        }
+
+        return {
+            "bitfield": bitfield,
+            "floating_mode": bits[10] == "1",
+            "switch_on": bits[9] == "1",
+            "dustproof_installed": bits[8] == "1",
+            "flags": {
+                "b10": bits[10],
+                "b9": bits[9],
+                "b8": bits[8],
+            },
+        }
 
     async def async_send_write_command(self, command: str) -> str:
         """Send a write command and refresh sensors."""

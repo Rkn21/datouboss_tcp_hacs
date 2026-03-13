@@ -186,6 +186,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:dip-switch",
         value_fn=lambda data: data["qpigs"].get("device_status_bits"),
+        attributes_fn=lambda data: data["qpigs"].get("device_status"),
     ),
     DatoubossSensorDescription(
         key="device_status_bits_2",
@@ -193,6 +194,7 @@ SENSORS: tuple[DatoubossSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:dip-switch",
         value_fn=lambda data: data["qpigs"].get("device_status_bits_2"),
+        attributes_fn=lambda data: data["qpigs"].get("device_status_2"),
     ),
     DatoubossSensorDescription(
         key="fan_offset",
