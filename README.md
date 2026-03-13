@@ -36,6 +36,8 @@ This integration polls the inverter over TCP, parses the common Voltronic/Axpert
   - AC input range
   - max AC charge current
   - max total charge current
+- Number controls for verified writable voltage settings:
+  - battery under voltage (`PSDV`, 42.0 V to 48.0 V, user battery type only)
 
 Only parameters with a verified write command are exposed as Home Assistant controls. Other `QPIRI` values are still exposed as sensors until their corresponding write commands are confirmed.
 - Service actions for sending commands:

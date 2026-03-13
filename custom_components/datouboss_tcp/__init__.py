@@ -24,6 +24,7 @@ from .const import (
     ATTR_EXPECT_RESPONSE,
     ATTR_MODE,
     ATTR_REFRESH,
+    ATTR_VOLTAGE,
     CHARGER_SOURCE_PRIORITY_MAP,
     CONF_SCAN_INTERVAL,
     CONF_TIMEOUT,
@@ -36,6 +37,7 @@ from .const import (
     SERVICE_REFRESH,
     SERVICE_SEND_COMMAND,
     SERVICE_SET_AC_INPUT_RANGE,
+    SERVICE_SET_BATTERY_UNDER_VOLTAGE,
     SERVICE_SET_CHARGER_SOURCE_PRIORITY,
     SERVICE_SET_MAX_AC_CHARGE_CURRENT,
     SERVICE_SET_MAX_TOTAL_CHARGE_CURRENT,
@@ -64,6 +66,13 @@ SET_AMPS_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_CONFIG_ENTRY_ID): str,
         vol.Required(ATTR_AMPS): vol.All(vol.Coerce(int), vol.Range(min=0, max=999)),
+    }
+)
+
+SET_VOLTAGE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_CONFIG_ENTRY_ID): str,
+        vol.Required(ATTR_VOLTAGE): vol.All(vol.Coerce(float), vol.Range(min=42.0, max=48.0)),
     }
 )
 
@@ -144,6 +153,16 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         payload = await runtime.coordinator.async_send_write_command(f"MCHGC{amps:03d}")
         return {"payload": payload, "amps": amps}
 
+    async def async_set_battery_under_voltage(call: ServiceCall) -> ServiceResponse:
+        runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
+        voltage = round(float(call.data[ATTR_VOLTAGE]), 1)
+        if runtime.coordinator.data["qpiri"].get("battery_type") != "user":
+            raise ServiceValidationError(
+                "Battery under voltage can only be changed when battery type is set to user"
+            )
+        payload = await runtime.coordinator.async_send_write_command(f"PSDV{voltage:.1f}")
+        return {"payload": payload, "voltage": voltage}
+
     if not hass.services.has_service(DOMAIN, SERVICE_SEND_COMMAND):
         hass.services.async_register(
             DOMAIN,
@@ -204,6 +223,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             SERVICE_SET_MAX_TOTAL_CHARGE_CURRENT,
             async_set_max_total_charge_current,
             schema=SET_AMPS_SCHEMA,
+            supports_response=SupportsResponse.ONLY,
+        )
+
+    if not hass.services.has_service(DOMAIN, SERVICE_SET_BATTERY_UNDER_VOLTAGE):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SET_BATTERY_UNDER_VOLTAGE,
+            async_set_battery_under_voltage,
+            schema=SET_VOLTAGE_SCHEMA,
             supports_response=SupportsResponse.ONLY,
         )
 

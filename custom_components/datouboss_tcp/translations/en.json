@@ -48,6 +48,9 @@
       "switch_on": {"name": "Inverter on"},
       "dustproof_installed": {"name": "Dustproof installed"}
     },
+    "number": {
+      "battery_under_voltage_setting": {"name": "Battery under voltage setting"}
+    },
     "sensor": {
       "mode": {"name": "Mode"},
       "serial_number": {"name": "Serial number"},
@@ -105,6 +108,14 @@
     }
   },
   "services": {
+    "set_battery_under_voltage": {
+      "name": "Set battery under voltage",
+      "description": "Set the battery cut-off voltage using PSDV.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "voltage": {"name": "Voltage"}
+      }
+    },
     "send_command": {
       "name": "Send command",
       "description": "Send a raw Datouboss / Voltronic command. CRC and CR are appended automatically.",

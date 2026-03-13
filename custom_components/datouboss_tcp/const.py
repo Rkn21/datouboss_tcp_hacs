@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 DOMAIN = "datouboss_tcp"
-PLATFORMS = ["sensor", "select", "binary_sensor"]
+PLATFORMS = ["sensor", "select", "binary_sensor", "number"]
 
 DEFAULT_NAME = "Datouboss Inverter"
 DEFAULT_PORT = 8886
@@ -20,6 +20,7 @@ ATTR_CONFIG_ENTRY_ID = "config_entry_id"
 ATTR_COMMAND = "command"
 ATTR_MODE = "mode"
 ATTR_AMPS = "amps"
+ATTR_VOLTAGE = "voltage"
 ATTR_REFRESH = "refresh"
 ATTR_EXPECT_RESPONSE = "expect_response"
 
@@ -30,6 +31,7 @@ SERVICE_SET_CHARGER_SOURCE_PRIORITY = "set_charger_source_priority"
 SERVICE_SET_AC_INPUT_RANGE = "set_ac_input_range"
 SERVICE_SET_MAX_AC_CHARGE_CURRENT = "set_max_ac_charge_current"
 SERVICE_SET_MAX_TOTAL_CHARGE_CURRENT = "set_max_total_charge_current"
+SERVICE_SET_BATTERY_UNDER_VOLTAGE = "set_battery_under_voltage"
 
 OUTPUT_SOURCE_PRIORITY_MAP = {
     "utility_first": "00",

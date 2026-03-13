@@ -48,6 +48,9 @@
       "switch_on": {"name": "Onduleur allumé"},
       "dustproof_installed": {"name": "Protection anti-poussière installée"}
     },
+    "number": {
+      "battery_under_voltage_setting": {"name": "Réglage seuil sous-tension batterie"}
+    },
     "sensor": {
       "mode": {"name": "Mode"},
       "serial_number": {"name": "Numéro de série"},
@@ -105,6 +108,14 @@
     }
   },
   "services": {
+    "set_battery_under_voltage": {
+      "name": "Définir le seuil sous-tension batterie",
+      "description": "Définit la tension de coupure batterie via la commande PSDV.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "voltage": {"name": "Tension"}
+      }
+    },
     "send_command": {
       "name": "Envoyer une commande",
       "description": "Envoie une commande Datouboss / Voltronic brute. Le CRC et le CR sont ajoutés automatiquement.",
