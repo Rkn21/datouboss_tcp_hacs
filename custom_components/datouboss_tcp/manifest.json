@@ -1,0 +1,17 @@
+{
+  "domain": "datouboss_tcp",
+  "name": "Datouboss TCP",
+  "codeowners": [
+    "@Rkn21"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/Rkn21/datouboss_tcp_hacs",
+  "issue_tracker": "https://github.com/Rkn21/datouboss_tcp_hacs/issues",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "loggers": [
+    "custom_components.datouboss_tcp"
+  ],
+  "requirements": [],
+  "version": "0.1.0"
+}

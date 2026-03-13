@@ -1,0 +1,122 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Datouboss TCP",
+        "description": "Configurer un onduleur Datouboss connecté via une passerelle TCP vers RS232.",
+        "data": {
+          "host": "Hôte",
+          "port": "Port",
+          "name": "Nom",
+          "scan_interval": "Intervalle de lecture (secondes)",
+          "timeout": "Délai d'attente (secondes)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter à l'onduleur"
+    },
+    "abort": {
+      "already_configured": "Cet onduleur est déjà configuré"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Datouboss TCP",
+        "data": {
+          "scan_interval": "Intervalle de lecture (secondes)",
+          "timeout": "Délai d'attente (secondes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "mode": {"name": "Mode"},
+      "serial_number": {"name": "Numéro de série"},
+      "grid_voltage": {"name": "Tension réseau"},
+      "grid_frequency": {"name": "Fréquence réseau"},
+      "output_voltage": {"name": "Tension sortie"},
+      "output_frequency": {"name": "Fréquence sortie"},
+      "output_apparent_power": {"name": "Puissance apparente sortie"},
+      "output_active_power": {"name": "Puissance active sortie"},
+      "load_percent": {"name": "Charge"},
+      "bus_voltage": {"name": "Tension bus"},
+      "battery_voltage": {"name": "Tension batterie"},
+      "battery_charging_current": {"name": "Courant de charge batterie"},
+      "battery_capacity": {"name": "Capacité batterie"},
+      "heatsink_temperature": {"name": "Température dissipateur"},
+      "pv_battery_current": {"name": "Courant PV vers batterie"},
+      "pv_input_voltage": {"name": "Tension PV"},
+      "pv_output_power": {"name": "Puissance PV"},
+      "warnings_bitfield": {"name": "Bits d'alerte"}
+    },
+    "select": {
+      "output_source_priority": {"name": "Priorité source sortie"},
+      "charger_source_priority": {"name": "Priorité source charge"},
+      "ac_input_range": {"name": "Plage entrée AC"},
+      "max_ac_charge_current": {"name": "Courant max charge AC"},
+      "max_total_charge_current": {"name": "Courant max charge total"}
+    }
+  },
+  "services": {
+    "send_command": {
+      "name": "Envoyer une commande",
+      "description": "Envoie une commande Datouboss / Voltronic brute. Le CRC et le CR sont ajoutés automatiquement.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "command": {"name": "Commande"},
+        "expect_response": {"name": "Attendre une réponse"},
+        "refresh": {"name": "Rafraîchir après la commande"}
+      }
+    },
+    "refresh": {
+      "name": "Rafraîchir",
+      "description": "Force une mise à jour immédiate de tous les capteurs Datouboss.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"}
+      }
+    },
+    "set_output_source_priority": {
+      "name": "Définir la priorité de sortie",
+      "description": "Définit la priorité de la source de sortie de l'onduleur.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_charger_source_priority": {
+      "name": "Définir la priorité de charge",
+      "description": "Définit la priorité de la source de charge.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_ac_input_range": {
+      "name": "Définir la plage AC",
+      "description": "Définit la plage d'entrée AC.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_max_ac_charge_current": {
+      "name": "Définir le courant max de charge AC",
+      "description": "Définit le courant maximal de charge secteur.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "amps": {"name": "Ampères"}
+      }
+    },
+    "set_max_total_charge_current": {
+      "name": "Définir le courant max de charge total",
+      "description": "Définit le courant maximal de charge total.",
+      "fields": {
+        "config_entry_id": {"name": "ID de l'entrée de configuration"},
+        "amps": {"name": "Ampères"}
+      }
+    }
+  }
+}

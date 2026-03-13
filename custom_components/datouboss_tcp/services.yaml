@@ -1,0 +1,113 @@
+send_command:
+  name: Send command
+  description: Send a raw Datouboss / Voltronic command. The integration appends CRC and CR automatically.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    command:
+      required: true
+      example: QPIGS
+      selector:
+        text:
+    expect_response:
+      default: true
+      selector:
+        boolean:
+    refresh:
+      default: false
+      selector:
+        boolean:
+
+refresh:
+  name: Refresh
+  description: Force an immediate refresh of all Datouboss sensors.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+
+set_output_source_priority:
+  name: Set output source priority
+  description: Set the inverter output source priority.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    mode:
+      required: true
+      selector:
+        select:
+          options:
+            - utility_first
+            - solar_first
+            - sbu_priority
+
+set_charger_source_priority:
+  name: Set charger source priority
+  description: Set the inverter charger source priority.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    mode:
+      required: true
+      selector:
+        select:
+          options:
+            - utility_first
+            - solar_first
+            - solar_and_utility
+            - solar_only
+
+set_ac_input_range:
+  name: Set AC input range
+  description: Set the AC input range mode.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    mode:
+      required: true
+      selector:
+        select:
+          options:
+            - appliance
+            - ups
+
+set_max_ac_charge_current:
+  name: Set max AC charge current
+  description: Set the maximum grid/utility charging current in amps.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    amps:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 999
+          mode: box
+
+set_max_total_charge_current:
+  name: Set max total charge current
+  description: Set the maximum total charging current in amps.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    amps:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 999
+          mode: box

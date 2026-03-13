@@ -1,0 +1,122 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Datouboss TCP",
+        "description": "Configure a Datouboss inverter connected through a TCP to RS232 bridge.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "name": "Name",
+          "scan_interval": "Scan interval (seconds)",
+          "timeout": "Timeout (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the inverter"
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Datouboss TCP options",
+        "data": {
+          "scan_interval": "Scan interval (seconds)",
+          "timeout": "Timeout (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "mode": {"name": "Mode"},
+      "serial_number": {"name": "Serial number"},
+      "grid_voltage": {"name": "Grid voltage"},
+      "grid_frequency": {"name": "Grid frequency"},
+      "output_voltage": {"name": "Output voltage"},
+      "output_frequency": {"name": "Output frequency"},
+      "output_apparent_power": {"name": "Output apparent power"},
+      "output_active_power": {"name": "Output active power"},
+      "load_percent": {"name": "Load"},
+      "bus_voltage": {"name": "Bus voltage"},
+      "battery_voltage": {"name": "Battery voltage"},
+      "battery_charging_current": {"name": "Battery charging current"},
+      "battery_capacity": {"name": "Battery capacity"},
+      "heatsink_temperature": {"name": "Heatsink temperature"},
+      "pv_battery_current": {"name": "PV battery current"},
+      "pv_input_voltage": {"name": "PV input voltage"},
+      "pv_output_power": {"name": "PV output power"},
+      "warnings_bitfield": {"name": "Warnings bitfield"}
+    },
+    "select": {
+      "output_source_priority": {"name": "Output source priority"},
+      "charger_source_priority": {"name": "Charger source priority"},
+      "ac_input_range": {"name": "AC input range"},
+      "max_ac_charge_current": {"name": "Max AC charge current"},
+      "max_total_charge_current": {"name": "Max total charge current"}
+    }
+  },
+  "services": {
+    "send_command": {
+      "name": "Send command",
+      "description": "Send a raw Datouboss / Voltronic command. CRC and CR are appended automatically.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "command": {"name": "Command"},
+        "expect_response": {"name": "Expect response"},
+        "refresh": {"name": "Refresh after command"}
+      }
+    },
+    "refresh": {
+      "name": "Refresh",
+      "description": "Force an immediate refresh of all Datouboss sensors.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"}
+      }
+    },
+    "set_output_source_priority": {
+      "name": "Set output source priority",
+      "description": "Set the inverter output source priority.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_charger_source_priority": {
+      "name": "Set charger source priority",
+      "description": "Set the inverter charger source priority.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_ac_input_range": {
+      "name": "Set AC input range",
+      "description": "Set the AC input range mode.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_max_ac_charge_current": {
+      "name": "Set max AC charge current",
+      "description": "Set the maximum grid/utility charging current.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "amps": {"name": "Amps"}
+      }
+    },
+    "set_max_total_charge_current": {
+      "name": "Set max total charge current",
+      "description": "Set the maximum total charging current.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "amps": {"name": "Amps"}
+      }
+    }
+  }
+}
