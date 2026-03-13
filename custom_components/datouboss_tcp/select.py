@@ -8,6 +8,7 @@ from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -39,6 +40,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="battery_type_setting",
         translation_key="battery_type_setting",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type"),
         command_fn=lambda option: f"PBT{BATTERY_TYPE_MAP[option]}",
         options_fn=lambda coordinator: list(BATTERY_TYPE_MAP.keys()),
@@ -51,6 +53,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="output_source_priority",
         translation_key="output_source_priority",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("output_source_priority"),
         command_fn=lambda option: f"POP{OUTPUT_SOURCE_PRIORITY_MAP[option]}",
         options_fn=lambda coordinator: list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
@@ -62,6 +65,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="charger_source_priority",
         translation_key="charger_source_priority",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("charger_source_priority"),
         command_fn=lambda option: f"PCP{CHARGER_SOURCE_PRIORITY_MAP[option]}",
         options_fn=lambda coordinator: list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
@@ -73,6 +77,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="output_voltage_setting",
         translation_key="output_voltage_setting",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: _format_integerish_option(
             coordinator.data["qpiri"].get("ac_output_rating_voltage")
         ),
@@ -85,6 +90,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="output_frequency_setting",
         translation_key="output_frequency_setting",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: _format_integerish_option(
             coordinator.data["qpiri"].get("ac_output_rating_frequency")
         ),
@@ -97,6 +103,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="ac_input_range",
         translation_key="ac_input_range",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("ac_input_range"),
         command_fn=lambda option: f"PGR{AC_INPUT_RANGE_MAP[option]}",
         options_fn=lambda coordinator: list(AC_INPUT_RANGE_MAP.keys()),
@@ -108,6 +115,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="max_ac_charge_current",
         translation_key="max_ac_charge_current",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_ac_charge_current")),
         command_fn=lambda option: f"MUCHGC{int(option):03d}",
         options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])],
@@ -118,6 +126,7 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="max_total_charge_current",
         translation_key="max_total_charge_current",
+        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_total_charge_current")),
         command_fn=lambda option: f"MCHGC{int(option):03d}",
         options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])],
