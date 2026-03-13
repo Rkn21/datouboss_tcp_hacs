@@ -221,7 +221,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         name=entry.title,
         update_interval=timedelta(
             seconds=entry.options.get(
-                CONF_SCAN_INTERVAL, entry.data[CONF_SCAN_INTERVAL]
+                CONF_SCAN_INTERVAL,
+                entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
             )
         ),
     )

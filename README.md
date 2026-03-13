@@ -124,10 +124,3 @@ data:
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
 
-## Publishing note
-
-Before publishing this on GitHub, update these placeholder URLs in `custom_components/datouboss_tcp/manifest.json`:
-
-- `documentation`
-- `issue_tracker`
-
