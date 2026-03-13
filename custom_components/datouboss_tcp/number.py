@@ -27,6 +27,8 @@ from .coordinator import DatoubossRuntimeData
 class DatoubossNumberDescription(NumberEntityDescription):
     value_fn: Callable[[dict[str, Any]], float | None]
     command_fn: Callable[[float], str]
+    available_fn: Callable[[dict[str, Any]], bool] | None = None
+    attributes_fn: Callable[[dict[str, Any]], dict[str, Any] | None] | None = None
 
 
 NUMBERS: tuple[DatoubossNumberDescription, ...] = (
@@ -42,6 +44,122 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         mode=NumberMode.BOX,
         value_fn=lambda data: data["qpiri"].get("battery_under_voltage"),
         command_fn=lambda value: f"PSDV{value:.1f}",
+        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+        attributes_fn=lambda data: {
+            "battery_type": data["qpiri"].get("battery_type"),
+            "battery_type_code": data["qpiri"].get("battery_type_code"),
+            "supported_range": [42.0, 48.0],
+            "requires_battery_type": "user",
+        },
+    ),
+    DatoubossNumberDescription(
+        key="battery_recharge_voltage_setting",
+        translation_key="battery_recharge_voltage_setting",
+        device_class=NumberDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=44.0,
+        native_max_value=51.0,
+        native_step=0.1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data["qpiri"].get("battery_recharge_voltage"),
+        command_fn=lambda value: f"PBCV{value:.1f}",
+        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+    ),
+    DatoubossNumberDescription(
+        key="battery_redischarge_voltage_setting",
+        translation_key="battery_redischarge_voltage_setting",
+        device_class=NumberDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=48.0,
+        native_max_value=58.0,
+        native_step=0.1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data["qpiri"].get("battery_redischarge_voltage"),
+        command_fn=lambda value: f"PBDV{value:.1f}",
+        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+    ),
+    DatoubossNumberDescription(
+        key="battery_bulk_voltage_setting",
+        translation_key="battery_bulk_voltage_setting",
+        device_class=NumberDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=48.0,
+        native_max_value=58.4,
+        native_step=0.1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data["qpiri"].get("battery_bulk_voltage"),
+        command_fn=lambda value: f"PCVV{value:.1f}",
+        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+    ),
+    DatoubossNumberDescription(
+        key="battery_float_voltage_setting",
+        translation_key="battery_float_voltage_setting",
+        device_class=NumberDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=48.0,
+        native_max_value=58.4,
+        native_step=0.1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data["qpiri"].get("battery_float_voltage"),
+        command_fn=lambda value: f"PBFT{value:.1f}",
+        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+    ),
+    DatoubossNumberDescription(
+        key="battery_equalization_time_setting",
+        translation_key="battery_equalization_time_setting",
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=0,
+        native_max_value=999,
+        native_step=1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: _to_float_value(data["qbeqi"].get("equalization_time_minutes")),
+        command_fn=lambda value: f"PBEQT{int(round(value)):03d}",
+        available_fn=lambda data: bool(data["qbeqi"]),
+        attributes_fn=lambda data: {"unit": "minutes"},
+    ),
+    DatoubossNumberDescription(
+        key="battery_equalization_period_setting",
+        translation_key="battery_equalization_period_setting",
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=0,
+        native_max_value=999,
+        native_step=1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: _to_float_value(data["qbeqi"].get("equalization_period_days")),
+        command_fn=lambda value: f"PBEQP{int(round(value)):03d}",
+        available_fn=lambda data: bool(data["qbeqi"]),
+        attributes_fn=lambda data: {"unit": "days"},
+    ),
+    DatoubossNumberDescription(
+        key="battery_equalization_voltage_setting",
+        translation_key="battery_equalization_voltage_setting",
+        device_class=NumberDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=48.0,
+        native_max_value=61.0,
+        native_step=0.1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data["qbeqi"].get("equalization_voltage"),
+        command_fn=lambda value: f"PBEQV{value:.2f}",
+        available_fn=lambda data: bool(data["qbeqi"]),
+    ),
+    DatoubossNumberDescription(
+        key="battery_equalization_timeout_setting",
+        translation_key="battery_equalization_timeout_setting",
+        entity_category=EntityCategory.CONFIG,
+        native_min_value=0,
+        native_max_value=999,
+        native_step=1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: _to_float_value(data["qbeqi"].get("equalization_timeout_minutes")),
+        command_fn=lambda value: f"PBEQOT{int(round(value)):03d}",
+        available_fn=lambda data: bool(data["qbeqi"]),
+        attributes_fn=lambda data: {"unit": "minutes"},
     ),
 )
 
@@ -92,18 +210,23 @@ class DatoubossNumber(CoordinatorEntity, NumberEntity):
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.data["qpiri"].get("battery_type") == "user"
+        if self.entity_description.available_fn is None:
+            return super().available
+        return super().available and self.entity_description.available_fn(self.coordinator.data)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        return {
-            "battery_type": self.coordinator.data["qpiri"].get("battery_type"),
-            "battery_type_code": self.coordinator.data["qpiri"].get("battery_type_code"),
-            "supported_range": [42.0, 48.0],
-            "requires_battery_type": "user",
-        }
+        if self.entity_description.attributes_fn is not None:
+            return self.entity_description.attributes_fn(self.coordinator.data)
+        return None
 
     async def async_set_native_value(self, value: float) -> None:
         await self.runtime.coordinator.async_send_write_command(
             self.entity_description.command_fn(value)
         )
+
+
+def _to_float_value(value: Any) -> float | None:
+    if value is None:
+        return None
+    return float(value)

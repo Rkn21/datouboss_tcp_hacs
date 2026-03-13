@@ -128,3 +128,319 @@ set_battery_under_voltage:
           max: 48
           step: 0.1
           mode: box
+
+set_buzzer_alarm:
+  name: Set buzzer alarm
+  description: Enable or disable the buzzer alarm flag.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_overload_bypass:
+  name: Set overload bypass
+  description: Enable or disable overload bypass.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_lcd_auto_return:
+  name: Set LCD auto return
+  description: Enable or disable LCD auto return after one minute.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_overload_auto_restart:
+  name: Set overload auto restart
+  description: Enable or disable overload auto restart.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_over_temperature_auto_restart:
+  name: Set over temperature auto restart
+  description: Enable or disable over-temperature auto restart.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_backlight:
+  name: Set backlight
+  description: Enable or disable the LCD backlight.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_primary_source_interrupt_beep:
+  name: Set primary source interrupt beep
+  description: Enable or disable beeps while the primary source is interrupted.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_fault_code_record:
+  name: Set fault code record
+  description: Enable or disable fault code recording.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_battery_type:
+  name: Set battery type
+  description: Set the battery type using the public PBT command values.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    mode:
+      required: true
+      selector:
+        select:
+          options:
+            - agm
+            - flooded
+            - user
+
+set_output_voltage:
+  name: Set output voltage
+  description: Set the AC output voltage.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    mode:
+      required: true
+      selector:
+        select:
+          options:
+            - "220"
+            - "230"
+            - "240"
+
+set_output_frequency:
+  name: Set output frequency
+  description: Set the AC output frequency.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    mode:
+      required: true
+      selector:
+        select:
+          options:
+            - "50"
+            - "60"
+
+set_battery_recharge_voltage:
+  name: Set battery recharge voltage
+  description: Set the back-to-charge voltage using PBCV. Intended for user-defined battery type.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    voltage:
+      required: true
+      selector:
+        number:
+          min: 44
+          max: 51
+          step: 0.1
+          mode: box
+
+set_battery_redischarge_voltage:
+  name: Set battery redischarge voltage
+  description: Set the back-to-discharge voltage using PBDV. Public protocol allows 0.0 or 48.0 to 58.0 V.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    voltage:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 58
+          step: 0.1
+          mode: box
+
+set_battery_bulk_voltage:
+  name: Set battery bulk voltage
+  description: Set the bulk charging voltage using PCVV.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    voltage:
+      required: true
+      selector:
+        number:
+          min: 48
+          max: 58.4
+          step: 0.1
+          mode: box
+
+set_battery_float_voltage:
+  name: Set battery float voltage
+  description: Set the float charging voltage using PBFT.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    voltage:
+      required: true
+      selector:
+        number:
+          min: 48
+          max: 58.4
+          step: 0.1
+          mode: box
+
+set_battery_equalization:
+  name: Set battery equalization
+  description: Enable or disable battery equalization.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_battery_equalization_active_now:
+  name: Set battery equalization active now
+  description: Enable or disable real-time equalization activation.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    enabled:
+      required: true
+      selector:
+        boolean:
+
+set_battery_equalization_time:
+  name: Set battery equalization time
+  description: Set equalization time in minutes using PBEQT.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    minutes:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 999
+          step: 1
+          mode: box
+
+set_battery_equalization_period:
+  name: Set battery equalization period
+  description: Set equalization period in days using PBEQP.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    days:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 999
+          step: 1
+          mode: box
+
+set_battery_equalization_voltage:
+  name: Set battery equalization voltage
+  description: Set equalization voltage using PBEQV.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    voltage:
+      required: true
+      selector:
+        number:
+          min: 48
+          max: 61
+          step: 0.01
+          mode: box
+
+set_battery_equalization_timeout:
+  name: Set battery equalization timeout
+  description: Set equalization timeout in minutes using PBEQOT.
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        text:
+    minutes:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 999
+          step: 1
+          mode: box

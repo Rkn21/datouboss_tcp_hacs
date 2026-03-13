@@ -49,7 +49,15 @@
       "dustproof_installed": {"name": "Dustproof installed"}
     },
     "number": {
-      "battery_under_voltage_setting": {"name": "Battery under voltage setting"}
+      "battery_under_voltage_setting": {"name": "Battery under voltage setting"},
+      "battery_recharge_voltage_setting": {"name": "Back to charge voltage setting"},
+      "battery_redischarge_voltage_setting": {"name": "Back to discharge voltage setting"},
+      "battery_bulk_voltage_setting": {"name": "Bulk charging voltage setting"},
+      "battery_float_voltage_setting": {"name": "Float charging voltage setting"},
+      "battery_equalization_time_setting": {"name": "Equalization time setting"},
+      "battery_equalization_period_setting": {"name": "Equalization period setting"},
+      "battery_equalization_voltage_setting": {"name": "Equalization voltage setting"},
+      "battery_equalization_timeout_setting": {"name": "Equalization timeout setting"}
     },
     "sensor": {
       "mode": {"name": "Mode"},
@@ -100,14 +108,197 @@
       "raw_payloads": {"name": "Raw payloads"}
     },
     "select": {
+      "battery_type_setting": {"name": "Battery type setting"},
+      "output_voltage_setting": {"name": "Output voltage setting"},
+      "output_frequency_setting": {"name": "Output frequency setting"},
       "output_source_priority": {"name": "Output source priority"},
       "charger_source_priority": {"name": "Charger source priority"},
       "ac_input_range": {"name": "AC input range"},
       "max_ac_charge_current": {"name": "Max AC charge current"},
       "max_total_charge_current": {"name": "Max total charge current"}
+    },
+    "switch": {
+      "buzzer_alarm": {"name": "Buzzer alarm"},
+      "overload_bypass": {"name": "Overload bypass"},
+      "lcd_auto_return": {"name": "LCD auto return"},
+      "overload_auto_restart": {"name": "Overload auto restart"},
+      "over_temperature_auto_restart": {"name": "Over temperature auto restart"},
+      "backlight": {"name": "Backlight"},
+      "primary_source_interrupt_beep": {"name": "Primary source interrupt beep"},
+      "fault_code_record": {"name": "Fault code record"},
+      "battery_equalization": {"name": "Battery equalization"},
+      "battery_equalization_active_now": {"name": "Battery equalization active now"}
     }
   },
   "services": {
+    "set_buzzer_alarm": {
+      "name": "Set buzzer alarm",
+      "description": "Enable or disable the buzzer alarm flag.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_overload_bypass": {
+      "name": "Set overload bypass",
+      "description": "Enable or disable overload bypass.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_lcd_auto_return": {
+      "name": "Set LCD auto return",
+      "description": "Enable or disable LCD auto return after one minute.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_overload_auto_restart": {
+      "name": "Set overload auto restart",
+      "description": "Enable or disable overload auto restart.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_over_temperature_auto_restart": {
+      "name": "Set over temperature auto restart",
+      "description": "Enable or disable over-temperature auto restart.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_backlight": {
+      "name": "Set backlight",
+      "description": "Enable or disable the LCD backlight.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_primary_source_interrupt_beep": {
+      "name": "Set primary source interrupt beep",
+      "description": "Enable or disable beeps while the primary source is interrupted.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_fault_code_record": {
+      "name": "Set fault code record",
+      "description": "Enable or disable fault code recording.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_battery_type": {
+      "name": "Set battery type",
+      "description": "Set the battery type using the public PBT command values.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "mode": {"name": "Mode"}
+      }
+    },
+    "set_output_voltage": {
+      "name": "Set output voltage",
+      "description": "Set the AC output voltage.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "mode": {"name": "Voltage"}
+      }
+    },
+    "set_output_frequency": {
+      "name": "Set output frequency",
+      "description": "Set the AC output frequency.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "mode": {"name": "Frequency"}
+      }
+    },
+    "set_battery_recharge_voltage": {
+      "name": "Set battery recharge voltage",
+      "description": "Set the back-to-charge voltage using PBCV.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "voltage": {"name": "Voltage"}
+      }
+    },
+    "set_battery_redischarge_voltage": {
+      "name": "Set battery redischarge voltage",
+      "description": "Set the back-to-discharge voltage using PBDV.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "voltage": {"name": "Voltage"}
+      }
+    },
+    "set_battery_bulk_voltage": {
+      "name": "Set battery bulk voltage",
+      "description": "Set the bulk charging voltage using PCVV.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "voltage": {"name": "Voltage"}
+      }
+    },
+    "set_battery_float_voltage": {
+      "name": "Set battery float voltage",
+      "description": "Set the float charging voltage using PBFT.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "voltage": {"name": "Voltage"}
+      }
+    },
+    "set_battery_equalization": {
+      "name": "Set battery equalization",
+      "description": "Enable or disable battery equalization.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_battery_equalization_active_now": {
+      "name": "Set battery equalization active now",
+      "description": "Enable or disable real-time equalization activation.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "enabled": {"name": "Enabled"}
+      }
+    },
+    "set_battery_equalization_time": {
+      "name": "Set battery equalization time",
+      "description": "Set equalization time in minutes using PBEQT.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "minutes": {"name": "Minutes"}
+      }
+    },
+    "set_battery_equalization_period": {
+      "name": "Set battery equalization period",
+      "description": "Set equalization period in days using PBEQP.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "days": {"name": "Days"}
+      }
+    },
+    "set_battery_equalization_voltage": {
+      "name": "Set battery equalization voltage",
+      "description": "Set equalization voltage using PBEQV.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "voltage": {"name": "Voltage"}
+      }
+    },
+    "set_battery_equalization_timeout": {
+      "name": "Set battery equalization timeout",
+      "description": "Set equalization timeout in minutes using PBEQOT.",
+      "fields": {
+        "config_entry_id": {"name": "Config entry ID"},
+        "minutes": {"name": "Minutes"}
+      }
+    },
     "set_battery_under_voltage": {
       "name": "Set battery under voltage",
       "description": "Set the battery cut-off voltage using PSDV.",

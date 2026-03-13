@@ -17,6 +17,7 @@ from .const import (
     CHARGER_SOURCE_PRIORITY_REVERSE,
     INVERTER_MODE_MAP,
     MACHINE_TYPE_REVERSE,
+    QFLAG_ENTITY_MAP,
     OUTPUT_SOURCE_PRIORITY_REVERSE,
     OUTPUT_MODE_REVERSE,
     PV_OK_CONDITION_REVERSE,
@@ -88,20 +89,34 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except DatoubossError as err:
             raise UpdateFailed(str(err)) from err
 
+        qflag = await self._async_send_optional_command("QFLAG")
+        qbeqi = await self._async_send_optional_command("QBEQI")
+
         return {
             "qmod": self._parse_qmod(qmod.raw_payload),
             "qid": qid.raw_payload.lstrip("("),
             "qpigs": self._parse_qpigs(qpigs.raw_payload),
             "qpiri": self._parse_qpiri(qpiri.raw_payload),
             "qpiws": self._parse_qpiws(qpiws.raw_payload),
+            "qflag": self._parse_qflag(qflag.raw_payload if qflag else None),
+            "qbeqi": self._parse_qbeqi(qbeqi.raw_payload if qbeqi else None),
             "raw": {
                 "QMOD": qmod.raw_payload,
                 "QID": qid.raw_payload,
                 "QPIGS": qpigs.raw_payload,
                 "QPIRI": qpiri.raw_payload,
                 "QPIWS": qpiws.raw_payload,
+                "QFLAG": qflag.raw_payload if qflag else None,
+                "QBEQI": qbeqi.raw_payload if qbeqi else None,
             },
         }
+
+    async def _async_send_optional_command(self, command: str):
+        try:
+            return await self.client.send_command(command)
+        except DatoubossError:
+            _LOGGER.debug("%s not supported by this inverter", command, exc_info=True)
+            return None
 
     def _parse_qmod(self, payload: str) -> dict[str, Any]:
         code = payload.lstrip("(")[:1]
@@ -114,6 +129,49 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         bitfield = payload.lstrip("(")
         active = [idx for idx, value in enumerate(bitfield) if value == "1"]
         return {"bitfield": bitfield, "active_indexes": active}
+
+    def _parse_qflag(self, payload: str | None) -> dict[str, Any]:
+        if payload is None:
+            return {"enabled": [], "disabled": [], "flags": {}}
+
+        state = payload.lstrip("(")
+        enabled_letters: list[str] = []
+        disabled_letters: list[str] = []
+
+        if state.startswith("E") and "D" in state:
+            disabled_index = state.find("D")
+            enabled_letters = list(state[1:disabled_index])
+            disabled_letters = list(state[disabled_index + 1 :])
+        else:
+            enabled_letters = list(state)
+
+        flags = {
+            entity_key: protocol_key in enabled_letters
+            for protocol_key, entity_key in QFLAG_ENTITY_MAP.items()
+        }
+        return {
+            "enabled": enabled_letters,
+            "disabled": disabled_letters,
+            "flags": flags,
+        }
+
+    def _parse_qbeqi(self, payload: str | None) -> dict[str, Any]:
+        if payload is None:
+            return {}
+
+        parts = payload.lstrip("(").split()
+        enabled_code = self._normalize_protocol_code(parts[0] if len(parts) > 0 else None, width=1)
+        active_code = self._normalize_protocol_code(parts[5] if len(parts) > 5 else None, width=1)
+        return {
+            "enabled_code": enabled_code,
+            "enabled": enabled_code == "1",
+            "equalization_time_minutes": self._to_int(parts, 1),
+            "equalization_period_days": self._to_int(parts, 2),
+            "equalization_voltage": self._to_float(parts, 3),
+            "equalization_timeout_minutes": self._to_int(parts, 4),
+            "active_now_code": active_code,
+            "active_now": active_code == "1",
+        }
 
     def _parse_qpigs(self, payload: str) -> dict[str, Any]:
         parts = payload.lstrip("(").split()
