@@ -21,10 +21,15 @@
     }
   },
   "options": {
+    "error": {
+      "cannot_connect": "Failed to connect to the inverter"
+    },
     "step": {
       "init": {
         "title": "Datouboss TCP options",
         "data": {
+          "host": "Host",
+          "port": "Port",
           "scan_interval": "Scan interval (seconds)",
           "timeout": "Timeout (seconds)"
         }

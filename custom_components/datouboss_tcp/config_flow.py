@@ -102,11 +102,26 @@ class DatoubossOptionsFlow(config_entries.OptionsFlowWithReload):
     """Datouboss options flow."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        errors: dict[str, str] = {}
+
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
+            host = user_input[CONF_HOST]
+            port = user_input[CONF_PORT]
+            timeout = user_input[CONF_TIMEOUT]
+            client = DatoubossTcpClient(host, port, timeout)
+
+            try:
+                await client.probe()
+            except DatoubossError:
+                _LOGGER.debug("Datouboss options probe failed", exc_info=True)
+                errors["base"] = "cannot_connect"
+            else:
+                return self.async_create_entry(data=user_input)
 
         options_schema = vol.Schema(
             {
+                vol.Required(CONF_HOST): str,
+                vol.Required(CONF_PORT, default=DEFAULT_PORT): vol.Coerce(int),
                 vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): SCAN_INTERVAL_SELECTOR,
                 vol.Required(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): TIMEOUT_SELECTOR,
             }
@@ -117,6 +132,14 @@ class DatoubossOptionsFlow(config_entries.OptionsFlowWithReload):
             data_schema=self.add_suggested_values_to_schema(
                 options_schema,
                 {
+                    CONF_HOST: self.config_entry.options.get(
+                        CONF_HOST,
+                        self.config_entry.data[CONF_HOST],
+                    ),
+                    CONF_PORT: self.config_entry.options.get(
+                        CONF_PORT,
+                        self.config_entry.data.get(CONF_PORT, DEFAULT_PORT),
+                    ),
                     CONF_SCAN_INTERVAL: self.config_entry.options.get(
                         CONF_SCAN_INTERVAL,
                         self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
@@ -127,4 +150,5 @@ class DatoubossOptionsFlow(config_entries.OptionsFlowWithReload):
                     ),
                 },
             ),
+            errors=errors,
         )

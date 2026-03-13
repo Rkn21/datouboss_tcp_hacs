@@ -21,10 +21,15 @@
     }
   },
   "options": {
+    "error": {
+      "cannot_connect": "Impossible de se connecter à l'onduleur"
+    },
     "step": {
       "init": {
         "title": "Options Datouboss TCP",
         "data": {
+          "host": "Hôte",
+          "port": "Port",
           "scan_interval": "Intervalle de lecture (secondes)",
           "timeout": "Délai d'attente (secondes)"
         }

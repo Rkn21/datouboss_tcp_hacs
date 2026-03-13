@@ -27,6 +27,7 @@ from .const import (
     CHARGER_SOURCE_PRIORITY_MAP,
     CONF_SCAN_INTERVAL,
     CONF_TIMEOUT,
+    DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     DOMAIN,
@@ -212,8 +213,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a Datouboss TCP config entry."""
     client = DatoubossTcpClient(
-        entry.data[CONF_HOST],
-        entry.data[CONF_PORT],
+        entry.options.get(CONF_HOST, entry.data[CONF_HOST]),
+        entry.options.get(CONF_PORT, entry.data.get(CONF_PORT, DEFAULT_PORT)),
         entry.options.get(CONF_TIMEOUT, entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)),
     )
     coordinator = DatoubossCoordinator(
