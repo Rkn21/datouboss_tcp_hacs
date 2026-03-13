@@ -17,9 +17,11 @@ This integration polls the inverter over TCP, parses the common Voltronic/Axpert
   - apparent/active power
   - load percent
   - DC bus voltage
-  - battery voltage/current/capacity
+  - battery voltage/current/capacity, including discharge current
   - heatsink temperature
   - PV voltage/current/power
+  - inverter rating and battery profile values reported by `QPIRI`
+  - diagnostic snapshots exposing parsed `QPIGS` / `QPIRI` data and raw payloads
   - warning bitfield
 - Select entities for:
   - output source priority
