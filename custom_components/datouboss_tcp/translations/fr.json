@@ -37,6 +37,17 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "output_active": {"name": "Sortie active"},
+      "charge_active": {"name": "Charge active"},
+      "scc_charging": {"name": "Charge SCC"},
+      "ac_charging": {"name": "Charge secteur"},
+      "configuration_changed": {"name": "Configuration modifiée"},
+      "sbu_priority_flag": {"name": "Flag priorité SBU"},
+      "floating_mode": {"name": "Mode floating"},
+      "switch_on": {"name": "Onduleur allumé"},
+      "dustproof_installed": {"name": "Protection anti-poussière installée"}
+    },
     "sensor": {
       "mode": {"name": "Mode"},
       "serial_number": {"name": "Numéro de série"},

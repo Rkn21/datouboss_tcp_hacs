@@ -23,6 +23,13 @@ This integration polls the inverter over TCP, parses the common Voltronic/Axpert
   - inverter rating and battery profile values reported by `QPIRI`
   - diagnostic snapshots exposing parsed `QPIGS` / `QPIRI` data and raw payloads
   - warning bitfield
+- Binary sensors for decoded inverter state flags:
+  - output active
+  - charge active
+  - SCC charging
+  - AC charging
+  - floating mode
+  - inverter on
 - Select entities for:
   - output source priority
   - charger source priority

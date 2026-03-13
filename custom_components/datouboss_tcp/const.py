@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 DOMAIN = "datouboss_tcp"
-PLATFORMS = ["sensor", "select"]
+PLATFORMS = ["sensor", "select", "binary_sensor"]
 
 DEFAULT_NAME = "Datouboss Inverter"
 DEFAULT_PORT = 8886

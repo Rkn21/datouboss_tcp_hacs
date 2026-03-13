@@ -37,6 +37,17 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "output_active": {"name": "Output active"},
+      "charge_active": {"name": "Charge active"},
+      "scc_charging": {"name": "SCC charging"},
+      "ac_charging": {"name": "AC charging"},
+      "configuration_changed": {"name": "Configuration changed"},
+      "sbu_priority_flag": {"name": "SBU priority flag"},
+      "floating_mode": {"name": "Floating mode"},
+      "switch_on": {"name": "Inverter on"},
+      "dustproof_installed": {"name": "Dustproof installed"}
+    },
     "sensor": {
       "mode": {"name": "Mode"},
       "serial_number": {"name": "Serial number"},
