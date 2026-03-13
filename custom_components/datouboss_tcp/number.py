@@ -44,12 +44,13 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         mode=NumberMode.BOX,
         value_fn=lambda data: data["qpiri"].get("battery_under_voltage"),
         command_fn=lambda value: f"PSDV{value:.1f}",
-        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+        available_fn=lambda data: data["qpiri"].get("battery_under_voltage") is not None,
         attributes_fn=lambda data: {
             "battery_type": data["qpiri"].get("battery_type"),
             "battery_type_code": data["qpiri"].get("battery_type_code"),
             "supported_range": [42.0, 48.0],
             "requires_battery_type": "user",
+            "writable": data["qpiri"].get("battery_type") == "user",
         },
     ),
     DatoubossNumberDescription(
@@ -64,7 +65,12 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         mode=NumberMode.BOX,
         value_fn=lambda data: data["qpiri"].get("battery_recharge_voltage"),
         command_fn=lambda value: f"PBCV{value:.1f}",
-        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+        available_fn=lambda data: data["qpiri"].get("battery_recharge_voltage") is not None,
+        attributes_fn=lambda data: {
+            "battery_type": data["qpiri"].get("battery_type"),
+            "requires_battery_type": "user",
+            "writable": data["qpiri"].get("battery_type") == "user",
+        },
     ),
     DatoubossNumberDescription(
         key="battery_redischarge_voltage_setting",
@@ -78,7 +84,12 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         mode=NumberMode.BOX,
         value_fn=lambda data: data["qpiri"].get("battery_redischarge_voltage"),
         command_fn=lambda value: f"PBDV{value:.1f}",
-        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+        available_fn=lambda data: data["qpiri"].get("battery_redischarge_voltage") is not None,
+        attributes_fn=lambda data: {
+            "battery_type": data["qpiri"].get("battery_type"),
+            "requires_battery_type": "user",
+            "writable": data["qpiri"].get("battery_type") == "user",
+        },
     ),
     DatoubossNumberDescription(
         key="battery_bulk_voltage_setting",
@@ -92,7 +103,12 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         mode=NumberMode.BOX,
         value_fn=lambda data: data["qpiri"].get("battery_bulk_voltage"),
         command_fn=lambda value: f"PCVV{value:.1f}",
-        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+        available_fn=lambda data: data["qpiri"].get("battery_bulk_voltage") is not None,
+        attributes_fn=lambda data: {
+            "battery_type": data["qpiri"].get("battery_type"),
+            "requires_battery_type": "user",
+            "writable": data["qpiri"].get("battery_type") == "user",
+        },
     ),
     DatoubossNumberDescription(
         key="battery_float_voltage_setting",
@@ -106,7 +122,12 @@ NUMBERS: tuple[DatoubossNumberDescription, ...] = (
         mode=NumberMode.BOX,
         value_fn=lambda data: data["qpiri"].get("battery_float_voltage"),
         command_fn=lambda value: f"PBFT{value:.1f}",
-        available_fn=lambda data: data["qpiri"].get("battery_type") == "user",
+        available_fn=lambda data: data["qpiri"].get("battery_float_voltage") is not None,
+        attributes_fn=lambda data: {
+            "battery_type": data["qpiri"].get("battery_type"),
+            "requires_battery_type": "user",
+            "writable": data["qpiri"].get("battery_type") == "user",
+        },
     ),
     DatoubossNumberDescription(
         key="battery_equalization_time_setting",

@@ -8,7 +8,6 @@ from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -40,82 +39,95 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="battery_type_setting",
         translation_key="battery_type_setting",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type"),
         command_fn=lambda option: f"PBT{BATTERY_TYPE_MAP[option]}",
-        options_fn=lambda coordinator: list(BATTERY_TYPE_MAP.keys()),
+        options_fn=lambda coordinator: _options_with_current(
+            list(BATTERY_TYPE_MAP.keys()),
+            coordinator.data["qpiri"].get("battery_type"),
+        ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("battery_type_code"),
-            "options": list(BATTERY_TYPE_MAP.keys()),
+            "writable_options": list(BATTERY_TYPE_MAP.keys()),
         },
-        available_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type") in BATTERY_TYPE_MAP,
+        available_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type") is not None,
     ),
     DatoubossSelectDescription(
         key="output_source_priority",
         translation_key="output_source_priority",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("output_source_priority"),
         command_fn=lambda option: f"POP{OUTPUT_SOURCE_PRIORITY_MAP[option]}",
-        options_fn=lambda coordinator: list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+        options_fn=lambda coordinator: _options_with_current(
+            list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+            coordinator.data["qpiri"].get("output_source_priority"),
+        ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("output_source_priority_code"),
-            "options": list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+            "writable_options": list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
         },
     ),
     DatoubossSelectDescription(
         key="charger_source_priority",
         translation_key="charger_source_priority",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("charger_source_priority"),
         command_fn=lambda option: f"PCP{CHARGER_SOURCE_PRIORITY_MAP[option]}",
-        options_fn=lambda coordinator: list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+        options_fn=lambda coordinator: _options_with_current(
+            list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+            coordinator.data["qpiri"].get("charger_source_priority"),
+        ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("charger_source_priority_code"),
-            "options": list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+            "writable_options": list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
         },
     ),
     DatoubossSelectDescription(
         key="output_voltage_setting",
         translation_key="output_voltage_setting",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: _format_integerish_option(
             coordinator.data["qpiri"].get("ac_output_rating_voltage")
         ),
         command_fn=lambda option: OUTPUT_VOLTAGE_MAP[option],
-        options_fn=lambda coordinator: list(OUTPUT_VOLTAGE_MAP.keys()),
+        options_fn=lambda coordinator: _options_with_current(
+            list(OUTPUT_VOLTAGE_MAP.keys()),
+            _format_integerish_option(coordinator.data["qpiri"].get("ac_output_rating_voltage")),
+        ),
         attributes_fn=lambda coordinator: {
             "current_voltage": coordinator.data["qpiri"].get("ac_output_rating_voltage"),
+            "writable_options": list(OUTPUT_VOLTAGE_MAP.keys()),
         },
     ),
     DatoubossSelectDescription(
         key="output_frequency_setting",
         translation_key="output_frequency_setting",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: _format_integerish_option(
             coordinator.data["qpiri"].get("ac_output_rating_frequency")
         ),
         command_fn=lambda option: OUTPUT_FREQUENCY_MAP[option],
-        options_fn=lambda coordinator: list(OUTPUT_FREQUENCY_MAP.keys()),
+        options_fn=lambda coordinator: _options_with_current(
+            list(OUTPUT_FREQUENCY_MAP.keys()),
+            _format_integerish_option(coordinator.data["qpiri"].get("ac_output_rating_frequency")),
+        ),
         attributes_fn=lambda coordinator: {
             "current_frequency": coordinator.data["qpiri"].get("ac_output_rating_frequency"),
+            "writable_options": list(OUTPUT_FREQUENCY_MAP.keys()),
         },
     ),
     DatoubossSelectDescription(
         key="ac_input_range",
         translation_key="ac_input_range",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("ac_input_range"),
         command_fn=lambda option: f"PGR{AC_INPUT_RANGE_MAP[option]}",
-        options_fn=lambda coordinator: list(AC_INPUT_RANGE_MAP.keys()),
+        options_fn=lambda coordinator: _options_with_current(
+            list(AC_INPUT_RANGE_MAP.keys()),
+            coordinator.data["qpiri"].get("ac_input_range"),
+        ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("ac_input_range_code"),
-            "options": list(AC_INPUT_RANGE_MAP.keys()),
+            "writable_options": list(AC_INPUT_RANGE_MAP.keys()),
         },
     ),
     DatoubossSelectDescription(
         key="max_ac_charge_current",
         translation_key="max_ac_charge_current",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_ac_charge_current")),
         command_fn=lambda option: f"MUCHGC{int(option):03d}",
         options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])],
@@ -126,7 +138,6 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
     DatoubossSelectDescription(
         key="max_total_charge_current",
         translation_key="max_total_charge_current",
-        entity_category=EntityCategory.CONFIG,
         current_option_fn=lambda coordinator: str(coordinator.data["qpiri"].get("max_total_charge_current")),
         command_fn=lambda option: f"MCHGC{int(option):03d}",
         options_fn=lambda coordinator: [str(value) for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])],
@@ -198,6 +209,10 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
         return super().available and self.entity_description.available_fn(self.coordinator)
 
     async def async_select_option(self, option: str) -> None:
+        attributes = self.extra_state_attributes or {}
+        writable_options = attributes.get("writable_options")
+        if writable_options is not None and option not in writable_options:
+            raise ValueError(f"Option '{option}' is read-only for this inverter")
         await self.runtime.coordinator.async_send_write_command(
             self.entity_description.command_fn(option)
         )
@@ -210,3 +225,9 @@ def _format_integerish_option(value: Any) -> str | None:
         return str(int(float(value)))
     except (TypeError, ValueError):
         return str(value)
+
+
+def _options_with_current(options: list[str], current: str | None) -> list[str]:
+    if current is None or current in options:
+        return options
+    return [*options, current]
