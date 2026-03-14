@@ -48,17 +48,7 @@
       "switch_on": {"name": "Onduleur allumé"},
       "dustproof_installed": {"name": "Protection anti-poussière installée"}
     },
-    "number": {
-      "battery_under_voltage_setting": {"name": "Réglage seuil sous-tension batterie"},
-      "battery_recharge_voltage_setting": {"name": "Réglage retour en charge batterie"},
-      "battery_redischarge_voltage_setting": {"name": "Réglage retour en décharge batterie"},
-      "battery_bulk_voltage_setting": {"name": "Réglage tension bulk batterie"},
-      "battery_float_voltage_setting": {"name": "Réglage tension float batterie"},
-      "battery_equalization_time_setting": {"name": "Réglage durée égalisation"},
-      "battery_equalization_period_setting": {"name": "Réglage période égalisation"},
-      "battery_equalization_voltage_setting": {"name": "Réglage tension égalisation"},
-      "battery_equalization_timeout_setting": {"name": "Réglage délai max égalisation"}
-    },
+    "number": {},
     "sensor": {
       "mode": {"name": "Mode"},
       "serial_number": {"name": "Numéro de série"},
@@ -108,205 +98,15 @@
       "raw_payloads": {"name": "Trames brutes"}
     },
     "select": {
-      "battery_type_setting": {"name": "Réglage type de batterie"},
-      "output_voltage_setting": {"name": "Réglage tension sortie (V)"},
-      "output_frequency_setting": {"name": "Réglage fréquence sortie (Hz)"},
       "output_source_priority": {"name": "Priorité source sortie"},
       "charger_source_priority": {"name": "Priorité source charge"},
       "ac_input_range": {"name": "Plage entrée AC"},
       "max_ac_charge_current": {"name": "Courant max charge AC (A)"},
       "max_total_charge_current": {"name": "Courant max charge total (A)"}
     },
-    "switch": {
-      "buzzer_alarm": {"name": "Alarme buzzer"},
-      "overload_bypass": {"name": "Bypass surcharge"},
-      "lcd_auto_return": {"name": "Retour auto LCD"},
-      "overload_auto_restart": {"name": "Redémarrage auto surcharge"},
-      "over_temperature_auto_restart": {"name": "Redémarrage auto surtempérature"},
-      "backlight": {"name": "Rétroéclairage"},
-      "primary_source_interrupt_beep": {"name": "Bip interruption source principale"},
-      "fault_code_record": {"name": "Enregistrement code défaut"},
-      "battery_equalization": {"name": "Égalisation batterie"},
-      "battery_equalization_active_now": {"name": "Égalisation batterie active"}
-    }
+    "switch": {}
   },
   "services": {
-    "set_buzzer_alarm": {
-      "name": "Définir l'alarme buzzer",
-      "description": "Active ou désactive le flag d'alarme buzzer.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_overload_bypass": {
-      "name": "Définir le bypass surcharge",
-      "description": "Active ou désactive le bypass surcharge.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_lcd_auto_return": {
-      "name": "Définir le retour auto LCD",
-      "description": "Active ou désactive le retour automatique LCD après une minute.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_overload_auto_restart": {
-      "name": "Définir le redémarrage auto surcharge",
-      "description": "Active ou désactive le redémarrage automatique après surcharge.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_over_temperature_auto_restart": {
-      "name": "Définir le redémarrage auto surtempérature",
-      "description": "Active ou désactive le redémarrage automatique après surtempérature.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_backlight": {
-      "name": "Définir le rétroéclairage",
-      "description": "Active ou désactive le rétroéclairage LCD.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_primary_source_interrupt_beep": {
-      "name": "Définir le bip interruption source principale",
-      "description": "Active ou désactive le bip lors d'une interruption de la source principale.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_fault_code_record": {
-      "name": "Définir l'enregistrement code défaut",
-      "description": "Active ou désactive l'enregistrement des codes défaut.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_battery_type": {
-      "name": "Définir le type de batterie",
-      "description": "Définit le type de batterie via les valeurs publiques PBT.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "mode": {"name": "Type de batterie"}
-      }
-    },
-    "set_output_voltage": {
-      "name": "Définir la tension de sortie",
-      "description": "Définit la tension AC de sortie.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "mode": {"name": "Tension (V)"}
-      }
-    },
-    "set_output_frequency": {
-      "name": "Définir la fréquence de sortie",
-      "description": "Définit la fréquence AC de sortie.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "mode": {"name": "Fréquence (Hz)"}
-      }
-    },
-    "set_battery_recharge_voltage": {
-      "name": "Définir la tension retour en charge batterie",
-      "description": "Définit la tension de retour en charge via PBCV. Réservé au type de batterie custom.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension (V)"}
-      }
-    },
-    "set_battery_redischarge_voltage": {
-      "name": "Définir la tension retour en décharge batterie",
-      "description": "Définit la tension de retour en décharge via PBDV.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension (V)"}
-      }
-    },
-    "set_battery_bulk_voltage": {
-      "name": "Définir la tension bulk batterie",
-      "description": "Définit la tension bulk de charge via PCVV.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension (V)"}
-      }
-    },
-    "set_battery_float_voltage": {
-      "name": "Définir la tension float batterie",
-      "description": "Définit la tension float de charge via PBFT.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension"}
-      }
-    },
-    "set_battery_equalization": {
-      "name": "Définir l'égalisation batterie",
-      "description": "Active ou désactive l'égalisation batterie.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_battery_equalization_active_now": {
-      "name": "Définir l'égalisation batterie active",
-      "description": "Active ou désactive l'activation immédiate de l'égalisation.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "enabled": {"name": "Activé"}
-      }
-    },
-    "set_battery_equalization_time": {
-      "name": "Définir la durée d'égalisation",
-      "description": "Définit la durée d'égalisation en minutes via PBEQT.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "minutes": {"name": "Minutes"}
-      }
-    },
-    "set_battery_equalization_period": {
-      "name": "Définir la période d'égalisation",
-      "description": "Définit la période d'égalisation en jours via PBEQP.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "days": {"name": "Jours"}
-      }
-    },
-    "set_battery_equalization_voltage": {
-      "name": "Définir la tension d'égalisation",
-      "description": "Définit la tension d'égalisation via PBEQV.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension"}
-      }
-    },
-    "set_battery_equalization_timeout": {
-      "name": "Définir le délai max d'égalisation",
-      "description": "Définit le délai maximal d'égalisation en minutes via PBEQOT.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "minutes": {"name": "Minutes"}
-      }
-    },
-    "set_battery_under_voltage": {
-      "name": "Définir le seuil sous-tension batterie",
-      "description": "Définit la tension de coupure batterie via la commande PSDV.",
-      "fields": {
-        "config_entry_id": {"name": "ID de l'entrée de configuration"},
-        "voltage": {"name": "Tension"}
-      }
-    },
     "send_command": {
       "name": "Envoyer une commande",
       "description": "Envoie une commande Datouboss / Voltronic brute. Le CRC et le CR sont ajoutés automatiquement.",

@@ -36,17 +36,8 @@ This integration polls the inverter over TCP, parses the common Voltronic/Axpert
   - AC input range
   - max AC charge current
   - max total charge current
-- Number controls for verified writable voltage settings:
-  - battery under voltage (`PSDV`, 42.0 V to 48.0 V, user battery type only)
-- Additional controls for verified writable settings:
-  - `QFLAG` option switches for buzzer, bypass, LCD auto return, auto restart, backlight, source-interrupt beep, and fault-code record
-  - battery type (`PBT00`/`01`/`02`)
-  - output voltage (`V220`/`V230`/`V240`)
-  - output frequency (`F50`/`F60`)
-  - battery recharge, redischarge, bulk, and float voltages (`PBCV`, `PBDV`, `PCVV`, `PBFT`)
-  - battery equalization state and parameters via `QBEQI` / `PBEQ*`
 
-Only parameters with a verified write command are exposed as Home Assistant controls. Other `QPIRI` values are still exposed as sensors until their corresponding write commands are confirmed.
+Writable Home Assistant controls are intentionally limited to the settings that remain exposed by this integration. Other `QPIRI` values are still exposed as sensors for monitoring only.
 - Service actions for sending commands:
   - `datouboss_tcp.send_command`
   - `datouboss_tcp.refresh`

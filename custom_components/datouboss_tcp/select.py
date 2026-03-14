@@ -16,13 +16,10 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     AC_INPUT_RANGE_MAP,
-    BATTERY_TYPE_MAP,
     CHARGER_SOURCE_PRIORITY_MAP,
     CONF_SERIAL,
     DOMAIN,
-    OUTPUT_FREQUENCY_MAP,
     OUTPUT_SOURCE_PRIORITY_MAP,
-    OUTPUT_VOLTAGE_MAP,
 )
 from .coordinator import DatoubossRuntimeData
 
@@ -37,22 +34,6 @@ class DatoubossSelectDescription(SelectEntityDescription):
 
 
 SELECTS: tuple[DatoubossSelectDescription, ...] = (
-    DatoubossSelectDescription(
-        key="battery_type_setting",
-        translation_key="battery_type_setting",
-        entity_category=EntityCategory.CONFIG,
-        current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type"),
-        command_fn=lambda option: f"PBT{BATTERY_TYPE_MAP[option]}",
-        options_fn=lambda coordinator: _options_with_current(
-            list(BATTERY_TYPE_MAP.keys()),
-            coordinator.data["qpiri"].get("battery_type"),
-        ),
-        attributes_fn=lambda coordinator: {
-            "code": coordinator.data["qpiri"].get("battery_type_code"),
-            "writable_options": list(BATTERY_TYPE_MAP.keys()),
-        },
-        available_fn=lambda coordinator: coordinator.data["qpiri"].get("battery_type") is not None,
-    ),
     DatoubossSelectDescription(
         key="output_source_priority",
         translation_key="output_source_priority",
@@ -79,42 +60,6 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("charger_source_priority_code"),
             "writable_options": list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
-        },
-    ),
-    DatoubossSelectDescription(
-        key="output_voltage_setting",
-        translation_key="output_voltage_setting",
-        entity_category=EntityCategory.CONFIG,
-        current_option_fn=lambda coordinator: _format_value_with_unit(
-            coordinator.data["qpiri"].get("ac_output_rating_voltage")
-            ,"V"
-        ),
-        command_fn=lambda option: OUTPUT_VOLTAGE_MAP[option],
-        options_fn=lambda coordinator: _options_with_current(
-            list(OUTPUT_VOLTAGE_MAP.keys()),
-            _format_value_with_unit(coordinator.data["qpiri"].get("ac_output_rating_voltage"), "V"),
-        ),
-        attributes_fn=lambda coordinator: {
-            "current_voltage": coordinator.data["qpiri"].get("ac_output_rating_voltage"),
-            "writable_options": list(OUTPUT_VOLTAGE_MAP.keys()),
-        },
-    ),
-    DatoubossSelectDescription(
-        key="output_frequency_setting",
-        translation_key="output_frequency_setting",
-        entity_category=EntityCategory.CONFIG,
-        current_option_fn=lambda coordinator: _format_value_with_unit(
-            coordinator.data["qpiri"].get("ac_output_rating_frequency")
-            ,"Hz"
-        ),
-        command_fn=lambda option: OUTPUT_FREQUENCY_MAP[option],
-        options_fn=lambda coordinator: _options_with_current(
-            list(OUTPUT_FREQUENCY_MAP.keys()),
-            _format_value_with_unit(coordinator.data["qpiri"].get("ac_output_rating_frequency"), "Hz"),
-        ),
-        attributes_fn=lambda coordinator: {
-            "current_frequency": coordinator.data["qpiri"].get("ac_output_rating_frequency"),
-            "writable_options": list(OUTPUT_FREQUENCY_MAP.keys()),
         },
     ),
     DatoubossSelectDescription(
