@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from datetime import timedelta
 import logging
 from typing import Any, cast
@@ -85,8 +84,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         mapping: dict[str, str],
         command_prefix: str = "",
         *,
-        formatter: Callable[[str, str], str] | None = None,
-        verify_applied_fn: Callable[[DatoubossRuntimeData, str], bool] | None = None,
+        formatter: callable | None = None,
     ):
         async def async_set_mode(call: ServiceCall) -> ServiceResponse:
             runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
@@ -97,10 +95,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 )
             command_value = mapping[mode]
             command = formatter(mode, command_value) if formatter else f"{command_prefix}{command_value}"
-            payload = await runtime.coordinator.async_send_write_command(
-                command,
-                verify_applied_fn=(lambda: verify_applied_fn(runtime, mode)) if verify_applied_fn else None,
-            )
+            payload = await runtime.coordinator.async_send_write_command(command)
             return {"payload": payload, "mode": mode}
 
         return async_set_mode
@@ -124,35 +119,23 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_set_output_source_priority = build_mode_service(
         OUTPUT_SOURCE_PRIORITY_MAP,
         "POP",
-        verify_applied_fn=lambda runtime, mode: runtime.coordinator.data["qpiri"].get("output_source_priority") == mode,
     )
     async_set_charger_source_priority = build_mode_service(
         CHARGER_SOURCE_PRIORITY_MAP,
         "PCP",
-        verify_applied_fn=lambda runtime, mode: runtime.coordinator.data["qpiri"].get("charger_source_priority") == mode,
     )
-    async_set_ac_input_range = build_mode_service(
-        AC_INPUT_RANGE_MAP,
-        "PGR",
-        verify_applied_fn=lambda runtime, mode: runtime.coordinator.data["qpiri"].get("ac_input_range") == mode,
-    )
+    async_set_ac_input_range = build_mode_service(AC_INPUT_RANGE_MAP, "PGR")
 
     async def async_set_max_ac_charge_current(call: ServiceCall) -> ServiceResponse:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
         amps = int(call.data[ATTR_AMPS])
-        payload = await runtime.coordinator.async_send_write_command(
-            f"MUCHGC{amps:03d}",
-            verify_applied_fn=lambda: runtime.coordinator.data["qpiri"].get("max_ac_charge_current") == amps,
-        )
+        payload = await runtime.coordinator.async_send_write_command(f"MUCHGC{amps:03d}")
         return {"payload": payload, "amps": amps}
 
     async def async_set_max_total_charge_current(call: ServiceCall) -> ServiceResponse:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
         amps = int(call.data[ATTR_AMPS])
-        payload = await runtime.coordinator.async_send_write_command(
-            f"MCHGC{amps:03d}",
-            verify_applied_fn=lambda: runtime.coordinator.data["qpiri"].get("max_total_charge_current") == amps,
-        )
+        payload = await runtime.coordinator.async_send_write_command(f"MCHGC{amps:03d}")
         return {"payload": payload, "amps": amps}
 
     if not hass.services.has_service(DOMAIN, SERVICE_SEND_COMMAND):
