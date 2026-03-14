@@ -65,7 +65,7 @@
       "battery_capacity": {"name": "Battery capacity"},
       "battery_discharge_current": {"name": "Battery discharge current"},
       "heatsink_temperature": {"name": "Heatsink temperature"},
-      "pv_battery_current": {"name": "PV battery current"},
+      "pv_battery_current": {"name": "PV current"},
       "pv_input_voltage": {"name": "PV input voltage"},
       "pv_output_power": {"name": "PV output power"},
       "scc_battery_voltage": {"name": "SCC battery voltage"},

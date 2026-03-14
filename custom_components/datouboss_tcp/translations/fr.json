@@ -65,7 +65,7 @@
       "battery_capacity": {"name": "Capacité batterie"},
       "battery_discharge_current": {"name": "Courant de décharge batterie"},
       "heatsink_temperature": {"name": "Température dissipateur"},
-      "pv_battery_current": {"name": "Courant PV vers batterie"},
+      "pv_battery_current": {"name": "Courant PV"},
       "pv_input_voltage": {"name": "Tension PV"},
       "pv_output_power": {"name": "Puissance PV"},
       "scc_battery_voltage": {"name": "Tension batterie SCC"},
