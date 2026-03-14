@@ -9,6 +9,8 @@ from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
+_CRC_RESERVED_BYTES = {0x28, 0x0D, 0x0A}
+
 
 class DatoubossError(Exception):
     """Base exception for Datouboss integration."""
@@ -48,6 +50,15 @@ def _crc_xmodem(payload: bytes) -> int:
     return crc
 
 
+def _protocol_crc_bytes(payload: bytes) -> bytes:
+    """Return CRC16/XMODEM bytes with Voltronic reserved-byte escaping applied."""
+    crc = _crc_xmodem(payload).to_bytes(2, "big")
+    return bytes(
+        byte + 1 if byte in _CRC_RESERVED_BYTES else byte
+        for byte in crc
+    )
+
+
 class DatoubossTcpClient:
     """Minimal TCP client for a transparent serial bridge."""
 
@@ -61,7 +72,7 @@ class DatoubossTcpClient:
     def build_frame(command: str) -> bytes:
         """Build a complete inverter frame from an ASCII command."""
         payload = command.encode("ascii")
-        crc = _crc_xmodem(payload).to_bytes(2, "big")
+        crc = _protocol_crc_bytes(payload)
         return payload + crc + b"\r"
 
     async def send_command(
@@ -116,7 +127,7 @@ class DatoubossTcpClient:
 
         payload = raw[:-3]
         rx_crc = int.from_bytes(raw[-3:-1], "big")
-        calc_crc = _crc_xmodem(payload)
+        calc_crc = int.from_bytes(_protocol_crc_bytes(payload), "big")
         crc_ok = rx_crc == calc_crc
 
         payload_text = payload.decode("ascii", errors="replace")
