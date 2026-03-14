@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
@@ -10,7 +12,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .client import DatoubossCommandError, DatoubossError, DatoubossTcpClient
+from .client import DatoubossConnectionError, DatoubossCommandError, DatoubossError, DatoubossTcpClient
 from .const import (
     AC_INPUT_RANGE_REVERSE,
     BATTERY_TYPE_REVERSE,
@@ -55,6 +57,7 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.serial: str | None = None
         self.supported_total_charge_currents: list[int] = []
         self.supported_ac_charge_currents: list[int] = []
+        self.write_verify_delay = 1.0
 
     async def _async_setup(self) -> None:
         """Fetch static-ish data once."""
@@ -321,11 +324,35 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             },
         }
 
-    async def async_send_write_command(self, command: str) -> str:
+    async def async_send_write_command(
+        self,
+        command: str,
+        *,
+        verify_applied_fn: Callable[[], bool] | None = None,
+    ) -> str:
         """Send a write command and refresh sensors."""
-        response = await self.client.send_command(command)
+        try:
+            response = await self.client.send_command(command)
+        except DatoubossConnectionError as err:
+            if verify_applied_fn is None or not self._is_response_timeout_error(err):
+                raise
+
+            await asyncio.sleep(self.write_verify_delay)
+            await self.async_refresh()
+            if verify_applied_fn():
+                _LOGGER.debug(
+                    "Write command %s timed out waiting for an ACK but the new state was verified after refresh",
+                    command,
+                )
+                return ""
+            raise
+
         await self.async_refresh()
         return response.raw_payload
+
+    @staticmethod
+    def _is_response_timeout_error(err: DatoubossConnectionError) -> bool:
+        return "Timeout while waiting for inverter response" in str(err)
 
     async def async_send_raw_command(
         self,

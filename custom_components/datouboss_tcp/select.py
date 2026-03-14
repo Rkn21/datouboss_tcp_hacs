@@ -181,7 +181,8 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
         if writable_options is not None and option not in writable_options:
             raise ValueError(f"Option '{option}' is read-only for this inverter")
         await self.runtime.coordinator.async_send_write_command(
-            self.entity_description.command_fn(option)
+            self.entity_description.command_fn(option),
+            verify_applied_fn=lambda: self.current_option == option,
         )
 
 
