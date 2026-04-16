@@ -4,22 +4,32 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
+import asyncio
 import logging
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .client import DatoubossCommandError, DatoubossError, DatoubossTcpClient
+from .client import DatoubossCommandError, DatoubossError, DatoubossProtocolError, DatoubossTcpClient
 from .const import (
+    AC_INPUT_RANGE_MAP,
     AC_INPUT_RANGE_REVERSE,
     BATTERY_TYPE_REVERSE,
+    CHARGER_SOURCE_PRIORITY_MAP,
     CHARGER_SOURCE_PRIORITY_REVERSE,
+    CHARGER_SOURCE_PRIORITY_OPTIONS_CLASSIC,
+    CHARGER_SOURCE_PRIORITY_OPTIONS_VMII,
     INVERTER_MODE_MAP,
     MACHINE_TYPE_REVERSE,
+    OUTPUT_SOURCE_PRIORITY_MAP,
     OUTPUT_SOURCE_PRIORITY_REVERSE,
+    OUTPUT_SOURCE_PRIORITY_OPTIONS_CLASSIC,
+    OUTPUT_SOURCE_PRIORITY_OPTIONS_VMII,
     OUTPUT_MODE_REVERSE,
     PV_OK_CONDITION_REVERSE,
+    PROTOCOL_CLASSIC,
+    PROTOCOL_VMII,
     TOPOLOGY_REVERSE,
 )
 
@@ -53,13 +63,26 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.client = client
         self.serial: str | None = None
+        self.model_name: str | None = None
+        self.protocol_variant: str = client.protocol_variant
         self.supported_total_charge_currents: list[int] = []
         self.supported_ac_charge_currents: list[int] = []
 
     async def _async_setup(self) -> None:
         """Fetch static-ish data once."""
+        self.protocol_variant = await self.client.ensure_protocol()
+
+        try:
+            model = await self.client.send_command("QMN")
+            self.model_name = model.raw_payload.lstrip("(") or None
+        except DatoubossError:
+            _LOGGER.debug("QMN not supported by this inverter", exc_info=True)
+            self.model_name = self.client.model_name
+
         probe = await self.client.probe()
         self.serial = str(probe["serial"])
+        self.model_name = probe.get("model_name") or self.model_name
+        self.protocol_variant = str(probe.get("protocol_variant") or self.protocol_variant)
 
         try:
             self.supported_total_charge_currents = await self.client.fetch_supported_currents(
@@ -79,6 +102,9 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Poll the inverter."""
+        if self.protocol_variant == PROTOCOL_VMII:
+            return await self._async_update_data_vmii()
+
         try:
             qmod = await self.client.send_command("QMOD")
             qid = await self.client.send_command("QID")
@@ -97,6 +123,31 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "raw": {
                 "QMOD": qmod.raw_payload,
                 "QID": qid.raw_payload,
+                "QPIGS": qpigs.raw_payload,
+                "QPIRI": qpiri.raw_payload,
+                "QPIWS": qpiws.raw_payload,
+            },
+        }
+
+    async def _async_update_data_vmii(self) -> dict[str, Any]:
+        """Poll VMII/MAX-style inverters with per-command reads."""
+        try:
+            qmod = await self._async_vmii_query("QMOD")
+            qpigs = await self._async_vmii_query("QPIGS")
+            qpiri = await self._async_vmii_query("QPIRI")
+            qpiws = await self._async_vmii_query("QPIWS")
+        except DatoubossError as err:
+            raise UpdateFailed(str(err)) from err
+
+        return {
+            "qmod": self._parse_qmod(qmod.raw_payload),
+            "qid": self.serial or "",
+            "qpigs": self._parse_qpigs(qpigs.raw_payload),
+            "qpiri": self._parse_qpiri(qpiri.raw_payload),
+            "qpiws": self._parse_qpiws(qpiws.raw_payload),
+            "raw": {
+                "QMOD": qmod.raw_payload,
+                "QID": self.serial or "",
                 "QPIGS": qpigs.raw_payload,
                 "QPIRI": qpiri.raw_payload,
                 "QPIWS": qpiws.raw_payload,
@@ -223,6 +274,63 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         }
         return data
 
+    def _parse_qdi(self, payload: str) -> dict[str, Any]:
+        parts = payload.lstrip("(").split()
+        battery_type_code = self._normalize_protocol_code(
+            parts[11] if len(parts) > 11 else None,
+            width=1,
+        )
+        ac_input_range_code = self._normalize_protocol_code(
+            parts[8] if len(parts) > 8 else None,
+            width=2,
+        )
+        output_priority_code = self._normalize_protocol_code(
+            parts[9] if len(parts) > 9 else None,
+            width=2,
+        )
+        charge_priority_code = self._normalize_protocol_code(
+            parts[10] if len(parts) > 10 else None,
+            width=2,
+        )
+        output_mode_code = self._normalize_protocol_code(
+            parts[21] if len(parts) > 21 else None,
+            width=1,
+        )
+        pv_ok_condition_code = self._normalize_protocol_code(
+            parts[23] if len(parts) > 23 else None,
+            width=1,
+        )
+
+        return {
+            "ac_output_rating_voltage": self._to_float(parts, 0),
+            "ac_output_rating_frequency": self._to_float(parts, 1),
+            "max_ac_charge_current": self._to_int(parts, 2),
+            "battery_under_voltage": self._to_float(parts, 3),
+            "battery_float_voltage": self._to_float(parts, 4),
+            "battery_bulk_voltage": self._to_float(parts, 5),
+            "battery_recharge_voltage": self._to_float(parts, 6),
+            "max_total_charge_current": self._to_int(parts, 7),
+            "ac_input_range_code": ac_input_range_code,
+            "ac_input_range": AC_INPUT_RANGE_REVERSE.get(ac_input_range_code, ac_input_range_code),
+            "output_source_priority_code": output_priority_code,
+            "output_source_priority": OUTPUT_SOURCE_PRIORITY_REVERSE.get(
+                output_priority_code, output_priority_code
+            ),
+            "charger_source_priority_code": charge_priority_code,
+            "charger_source_priority": CHARGER_SOURCE_PRIORITY_REVERSE.get(
+                charge_priority_code, charge_priority_code
+            ),
+            "battery_type_code": battery_type_code,
+            "battery_type": BATTERY_TYPE_REVERSE.get(battery_type_code, battery_type_code),
+            "output_mode_code": output_mode_code,
+            "output_mode": OUTPUT_MODE_REVERSE.get(output_mode_code, output_mode_code),
+            "battery_redischarge_voltage": self._to_float(parts, 22),
+            "pv_ok_condition_code": pv_ok_condition_code,
+            "pv_ok_condition": PV_OK_CONDITION_REVERSE.get(
+                pv_ok_condition_code, pv_ok_condition_code
+            ),
+        }
+
     @staticmethod
     def _to_float(parts: list[str], index: int) -> float | None:
         try:
@@ -325,8 +433,63 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Send a write command and refresh sensors."""
         response = await self.client.send_command(command)
 
+        if self.protocol_variant == PROTOCOL_VMII:
+            await asyncio.sleep(1.5)
         await self.async_refresh()
         return response.raw_payload
+
+    async def _async_vmii_query(self, command: str) -> Any:
+        last_response = None
+        for attempt in range(3):
+            response = await self.client.send_command(command)
+            last_response = response
+            if response.crc_ok:
+                return response
+            await asyncio.sleep(0.4 * (attempt + 1))
+
+        raise DatoubossProtocolError(
+            f"Invalid CRC while reading {command}: {last_response.raw_payload if last_response else 'no response'}"
+        )
+
+    def get_writable_output_source_priority_options(self) -> list[str]:
+        if self.protocol_variant == PROTOCOL_VMII:
+            return OUTPUT_SOURCE_PRIORITY_OPTIONS_VMII
+        return OUTPUT_SOURCE_PRIORITY_OPTIONS_CLASSIC
+
+    def get_writable_charger_source_priority_options(self) -> list[str]:
+        if self.protocol_variant == PROTOCOL_VMII:
+            return CHARGER_SOURCE_PRIORITY_OPTIONS_VMII
+        return CHARGER_SOURCE_PRIORITY_OPTIONS_CLASSIC
+
+    def build_output_source_priority_command(self, option: str) -> str:
+        if option not in self.get_writable_output_source_priority_options():
+            raise ValueError(f"Unsupported output source priority '{option}' for this inverter")
+        code = OUTPUT_SOURCE_PRIORITY_MAP.get(option)
+        if code is None:
+            raise ValueError(f"Unsupported output source priority '{option}' for this inverter")
+        return f"POP{code}"
+
+    def build_charger_source_priority_command(self, option: str) -> str:
+        if option not in self.get_writable_charger_source_priority_options():
+            raise ValueError(f"Unsupported charger source priority '{option}' for this inverter")
+        code = CHARGER_SOURCE_PRIORITY_MAP.get(option)
+        if code is None:
+            raise ValueError(f"Unsupported charger source priority '{option}' for this inverter")
+        return f"PCP{code}"
+
+    def build_ac_input_range_command(self, option: str) -> str:
+        code = AC_INPUT_RANGE_MAP.get(option)
+        if code is None:
+            raise ValueError(f"Unsupported AC input range '{option}' for this inverter")
+        return f"PGR{code}"
+
+    def build_max_ac_charge_current_command(self, amps: int) -> str:
+        return f"MUCHGC{amps:03d}"
+
+    def build_max_total_charge_current_command(self, amps: int) -> str:
+        if self.protocol_variant == PROTOCOL_VMII:
+            return f"MNCHGC{amps:03d}"
+        return f"MCHGC{amps:03d}"
 
     async def async_send_raw_command(
         self,

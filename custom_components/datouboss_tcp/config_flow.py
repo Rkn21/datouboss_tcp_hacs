@@ -15,14 +15,19 @@ from homeassistant.helpers import selector
 
 from .client import DatoubossError, DatoubossTcpClient
 from .const import (
+    CONF_PROTOCOL,
     CONF_SCAN_INTERVAL,
     CONF_SERIAL,
     CONF_TIMEOUT,
     DEFAULT_NAME,
     DEFAULT_PORT,
+    DEFAULT_PROTOCOL,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     DOMAIN,
+    PROTOCOL_AUTO,
+    PROTOCOL_CLASSIC,
+    PROTOCOL_VMII,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,6 +53,17 @@ SCAN_INTERVAL_SELECTOR = selector.NumberSelector(
     )
 )
 
+PROTOCOL_SELECTOR = selector.SelectSelector(
+    selector.SelectSelectorConfig(
+        options=[
+            PROTOCOL_AUTO,
+            PROTOCOL_CLASSIC,
+            PROTOCOL_VMII,
+        ],
+        mode=selector.SelectSelectorMode.DROPDOWN,
+    )
+)
+
 
 class DatoubossConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Datouboss TCP."""
@@ -61,7 +77,13 @@ class DatoubossConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             host = user_input[CONF_HOST]
             port = user_input[CONF_PORT]
             timeout = user_input[CONF_TIMEOUT]
-            client = DatoubossTcpClient(host, port, timeout)
+            protocol_variant = user_input[CONF_PROTOCOL]
+            client = DatoubossTcpClient(
+                host,
+                port,
+                timeout,
+                protocol_variant=protocol_variant,
+            )
 
             try:
                 probe = await client.probe()
@@ -87,6 +109,7 @@ class DatoubossConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
                     vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): SCAN_INTERVAL_SELECTOR,
                     vol.Required(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): TIMEOUT_SELECTOR,
+                    vol.Required(CONF_PROTOCOL, default=DEFAULT_PROTOCOL): PROTOCOL_SELECTOR,
                 }
             ),
             errors=errors,
@@ -108,7 +131,13 @@ class DatoubossOptionsFlow(config_entries.OptionsFlowWithReload):
             host = user_input[CONF_HOST]
             port = user_input[CONF_PORT]
             timeout = user_input[CONF_TIMEOUT]
-            client = DatoubossTcpClient(host, port, timeout)
+            protocol_variant = user_input[CONF_PROTOCOL]
+            client = DatoubossTcpClient(
+                host,
+                port,
+                timeout,
+                protocol_variant=protocol_variant,
+            )
 
             try:
                 await client.probe()
@@ -124,6 +153,7 @@ class DatoubossOptionsFlow(config_entries.OptionsFlowWithReload):
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): vol.Coerce(int),
                 vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): SCAN_INTERVAL_SELECTOR,
                 vol.Required(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): TIMEOUT_SELECTOR,
+                vol.Required(CONF_PROTOCOL, default=DEFAULT_PROTOCOL): PROTOCOL_SELECTOR,
             }
         )
 
@@ -147,6 +177,10 @@ class DatoubossOptionsFlow(config_entries.OptionsFlowWithReload):
                     CONF_TIMEOUT: self.config_entry.options.get(
                         CONF_TIMEOUT,
                         self.config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
+                    ),
+                    CONF_PROTOCOL: self.config_entry.options.get(
+                        CONF_PROTOCOL,
+                        self.config_entry.data.get(CONF_PROTOCOL, DEFAULT_PROTOCOL),
                     ),
                 },
             ),

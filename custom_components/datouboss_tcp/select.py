@@ -14,20 +14,14 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import (
-    AC_INPUT_RANGE_MAP,
-    CHARGER_SOURCE_PRIORITY_MAP,
-    CONF_SERIAL,
-    DOMAIN,
-    OUTPUT_SOURCE_PRIORITY_MAP,
-)
+from .const import AC_INPUT_RANGE_MAP, CONF_SERIAL, DOMAIN
 from .coordinator import DatoubossRuntimeData
 
 
 @dataclass(frozen=True, kw_only=True)
 class DatoubossSelectDescription(SelectEntityDescription):
     current_option_fn: Callable[[Any], str | None]
-    command_fn: Callable[[str], str]
+    command_fn: Callable[[Any, str], str]
     options_fn: Callable[[Any], list[str]]
     attributes_fn: Callable[[Any], dict[str, Any] | None] | None = None
     available_fn: Callable[[Any], bool] | None = None
@@ -38,35 +32,37 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         key="output_source_priority",
         translation_key="output_source_priority",
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("output_source_priority"),
-        command_fn=lambda option: f"POP{OUTPUT_SOURCE_PRIORITY_MAP[option]}",
+        command_fn=lambda coordinator, option: coordinator.build_output_source_priority_command(option),
         options_fn=lambda coordinator: _options_with_current(
-            list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+            coordinator.get_writable_output_source_priority_options(),
             coordinator.data["qpiri"].get("output_source_priority"),
         ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("output_source_priority_code"),
-            "writable_options": list(OUTPUT_SOURCE_PRIORITY_MAP.keys()),
+            "writable_options": coordinator.get_writable_output_source_priority_options(),
+            "protocol_variant": coordinator.protocol_variant,
         },
     ),
     DatoubossSelectDescription(
         key="charger_source_priority",
         translation_key="charger_source_priority",
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("charger_source_priority"),
-        command_fn=lambda option: f"PCP{CHARGER_SOURCE_PRIORITY_MAP[option]}",
+        command_fn=lambda coordinator, option: coordinator.build_charger_source_priority_command(option),
         options_fn=lambda coordinator: _options_with_current(
-            list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+            coordinator.get_writable_charger_source_priority_options(),
             coordinator.data["qpiri"].get("charger_source_priority"),
         ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("charger_source_priority_code"),
-            "writable_options": list(CHARGER_SOURCE_PRIORITY_MAP.keys()),
+            "writable_options": coordinator.get_writable_charger_source_priority_options(),
+            "protocol_variant": coordinator.protocol_variant,
         },
     ),
     DatoubossSelectDescription(
         key="ac_input_range",
         translation_key="ac_input_range",
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("ac_input_range"),
-        command_fn=lambda option: f"PGR{AC_INPUT_RANGE_MAP[option]}",
+        command_fn=lambda coordinator, option: coordinator.build_ac_input_range_command(option),
         options_fn=lambda coordinator: _options_with_current(
             list(AC_INPUT_RANGE_MAP.keys()),
             coordinator.data["qpiri"].get("ac_input_range"),
@@ -82,7 +78,9 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: _format_value_with_unit(
             coordinator.data["qpiri"].get("max_ac_charge_current"), "A"
         ),
-        command_fn=lambda option: f"MUCHGC{_parse_numeric_option(option):03d}",
+        command_fn=lambda coordinator, option: coordinator.build_max_ac_charge_current_command(
+            _parse_numeric_option(option)
+        ),
         options_fn=lambda coordinator: _options_with_current(
             [f"{value} A" for value in (coordinator.supported_ac_charge_currents or [2, 10, 20, 30, 40, 50, 60])],
             _format_value_with_unit(coordinator.data["qpiri"].get("max_ac_charge_current"), "A"),
@@ -100,7 +98,9 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         current_option_fn=lambda coordinator: _format_value_with_unit(
             coordinator.data["qpiri"].get("max_total_charge_current"), "A"
         ),
-        command_fn=lambda option: f"MCHGC{_parse_numeric_option(option):03d}",
+        command_fn=lambda coordinator, option: coordinator.build_max_total_charge_current_command(
+            _parse_numeric_option(option)
+        ),
         options_fn=lambda coordinator: _options_with_current(
             [f"{value} A" for value in (coordinator.supported_total_charge_currents or [10, 20, 30, 40, 50, 60, 80, 100])],
             _format_value_with_unit(coordinator.data["qpiri"].get("max_total_charge_current"), "A"),
@@ -147,7 +147,7 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, serial)},
             manufacturer="Datouboss",
-            model="Voltronic-compatible inverter",
+            model=runtime.coordinator.model_name or "Voltronic-compatible inverter",
             name=entry.title,
             serial_number=entry.data.get(CONF_SERIAL),
         )
@@ -181,7 +181,7 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
         if writable_options is not None and option not in writable_options:
             raise ValueError(f"Option '{option}' is read-only for this inverter")
         await self.runtime.coordinator.async_send_write_command(
-            self.entity_description.command_fn(option)
+            self.entity_description.command_fn(self.runtime.coordinator, option)
         )
 
 

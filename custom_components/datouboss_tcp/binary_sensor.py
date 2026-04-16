@@ -152,7 +152,7 @@ class DatoubossBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, serial)},
             manufacturer="Datouboss",
-            model="Voltronic-compatible inverter",
+            model=runtime.coordinator.model_name or "Voltronic-compatible inverter",
             name=entry.title,
             serial_number=entry.data.get(CONF_SERIAL),
         )

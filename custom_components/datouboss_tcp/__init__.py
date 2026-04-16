@@ -17,21 +17,20 @@ from homeassistant.helpers.typing import ConfigType
 
 from .client import DatoubossError, DatoubossTcpClient
 from .const import (
-    AC_INPUT_RANGE_MAP,
     ATTR_AMPS,
     ATTR_COMMAND,
     ATTR_CONFIG_ENTRY_ID,
     ATTR_EXPECT_RESPONSE,
     ATTR_MODE,
     ATTR_REFRESH,
-    CHARGER_SOURCE_PRIORITY_MAP,
+    CONF_PROTOCOL,
     CONF_SCAN_INTERVAL,
     CONF_TIMEOUT,
     DEFAULT_PORT,
+    DEFAULT_PROTOCOL,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     DOMAIN,
-    OUTPUT_SOURCE_PRIORITY_MAP,
     PLATFORMS,
     SERVICE_REFRESH,
     SERVICE_SEND_COMMAND,
@@ -80,26 +79,6 @@ def _get_loaded_runtime_data(hass: HomeAssistant, config_entry_id: str) -> Datou
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up Datouboss TCP services."""
 
-    def build_mode_service(
-        mapping: dict[str, str],
-        command_prefix: str = "",
-        *,
-        formatter: callable | None = None,
-    ):
-        async def async_set_mode(call: ServiceCall) -> ServiceResponse:
-            runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
-            mode = call.data[ATTR_MODE]
-            if mode not in mapping:
-                raise ServiceValidationError(
-                    f"Invalid mode '{mode}'. Valid values: {', '.join(mapping)}"
-                )
-            command_value = mapping[mode]
-            command = formatter(mode, command_value) if formatter else f"{command_prefix}{command_value}"
-            payload = await runtime.coordinator.async_send_write_command(command)
-            return {"payload": payload, "mode": mode}
-
-        return async_set_mode
-
     async def async_send_command(call: ServiceCall) -> ServiceResponse | None:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
         result = await runtime.coordinator.async_send_raw_command(
@@ -116,26 +95,50 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         await runtime.coordinator.async_refresh()
         return {"refreshed": True}
 
-    async_set_output_source_priority = build_mode_service(
-        OUTPUT_SOURCE_PRIORITY_MAP,
-        "POP",
-    )
-    async_set_charger_source_priority = build_mode_service(
-        CHARGER_SOURCE_PRIORITY_MAP,
-        "PCP",
-    )
-    async_set_ac_input_range = build_mode_service(AC_INPUT_RANGE_MAP, "PGR")
+    async def async_set_output_source_priority(call: ServiceCall) -> ServiceResponse:
+        runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
+        mode = call.data[ATTR_MODE]
+        try:
+            command = runtime.coordinator.build_output_source_priority_command(mode)
+        except ValueError as err:
+            raise ServiceValidationError(str(err)) from err
+        payload = await runtime.coordinator.async_send_write_command(command)
+        return {"payload": payload, "mode": mode}
+
+    async def async_set_charger_source_priority(call: ServiceCall) -> ServiceResponse:
+        runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
+        mode = call.data[ATTR_MODE]
+        try:
+            command = runtime.coordinator.build_charger_source_priority_command(mode)
+        except ValueError as err:
+            raise ServiceValidationError(str(err)) from err
+        payload = await runtime.coordinator.async_send_write_command(command)
+        return {"payload": payload, "mode": mode}
+
+    async def async_set_ac_input_range(call: ServiceCall) -> ServiceResponse:
+        runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
+        mode = call.data[ATTR_MODE]
+        try:
+            command = runtime.coordinator.build_ac_input_range_command(mode)
+        except ValueError as err:
+            raise ServiceValidationError(str(err)) from err
+        payload = await runtime.coordinator.async_send_write_command(command)
+        return {"payload": payload, "mode": mode}
 
     async def async_set_max_ac_charge_current(call: ServiceCall) -> ServiceResponse:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
         amps = int(call.data[ATTR_AMPS])
-        payload = await runtime.coordinator.async_send_write_command(f"MUCHGC{amps:03d}")
+        payload = await runtime.coordinator.async_send_write_command(
+            runtime.coordinator.build_max_ac_charge_current_command(amps)
+        )
         return {"payload": payload, "amps": amps}
 
     async def async_set_max_total_charge_current(call: ServiceCall) -> ServiceResponse:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
         amps = int(call.data[ATTR_AMPS])
-        payload = await runtime.coordinator.async_send_write_command(f"MCHGC{amps:03d}")
+        payload = await runtime.coordinator.async_send_write_command(
+            runtime.coordinator.build_max_total_charge_current_command(amps)
+        )
         return {"payload": payload, "amps": amps}
 
     if not hass.services.has_service(DOMAIN, SERVICE_SEND_COMMAND):
@@ -210,6 +213,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.options.get(CONF_HOST, entry.data[CONF_HOST]),
         entry.options.get(CONF_PORT, entry.data.get(CONF_PORT, DEFAULT_PORT)),
         entry.options.get(CONF_TIMEOUT, entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)),
+        protocol_variant=entry.options.get(
+            CONF_PROTOCOL,
+            entry.data.get(CONF_PROTOCOL, DEFAULT_PROTOCOL),
+        ),
     )
     coordinator = DatoubossCoordinator(
         hass,

@@ -11,10 +11,16 @@ DEFAULT_NAME = "Datouboss Inverter"
 DEFAULT_PORT = 8886
 DEFAULT_SCAN_INTERVAL = 5
 DEFAULT_TIMEOUT = 5
+DEFAULT_PROTOCOL = "auto"
 
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_TIMEOUT = "timeout"
 CONF_SERIAL = "serial"
+CONF_PROTOCOL = "protocol_variant"
+
+PROTOCOL_AUTO = "auto"
+PROTOCOL_CLASSIC = "classic"
+PROTOCOL_VMII = "vmii_max"
 
 ATTR_CONFIG_ENTRY_ID = "config_entry_id"
 ATTR_COMMAND = "command"
@@ -37,6 +43,11 @@ OUTPUT_SOURCE_PRIORITY_MAP = {
     "sbu_priority": "02",
 }
 OUTPUT_SOURCE_PRIORITY_REVERSE = {value: key for key, value in OUTPUT_SOURCE_PRIORITY_MAP.items()}
+OUTPUT_SOURCE_PRIORITY_OPTIONS_CLASSIC = list(OUTPUT_SOURCE_PRIORITY_MAP.keys())
+OUTPUT_SOURCE_PRIORITY_OPTIONS_VMII = [
+    "utility_first",
+    "solar_first",
+]
 
 CHARGER_SOURCE_PRIORITY_MAP = {
     "utility_first": "00",
@@ -45,6 +56,12 @@ CHARGER_SOURCE_PRIORITY_MAP = {
     "solar_only": "03",
 }
 CHARGER_SOURCE_PRIORITY_REVERSE = {value: key for key, value in CHARGER_SOURCE_PRIORITY_MAP.items()}
+CHARGER_SOURCE_PRIORITY_OPTIONS_CLASSIC = list(CHARGER_SOURCE_PRIORITY_MAP.keys())
+CHARGER_SOURCE_PRIORITY_OPTIONS_VMII = [
+    "solar_first",
+    "solar_and_utility",
+    "solar_only",
+]
 
 AC_INPUT_RANGE_MAP = {
     "APL (20ms/90-280 Vac)": "00",

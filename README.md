@@ -51,6 +51,30 @@ Writable Home Assistant controls are intentionally limited to the settings that 
 
 This integration is built around the Voltronic-compatible command set used by many Datouboss / Axpert-like inverters, including commands such as `QID`, `QMOD`, `QPIGS`, `QPIRI`, `QPIWS`, `QMCHGCR`, and `QMUCHGCR`.
 
+## Protocol variants
+
+Two Datouboss families are now handled:
+
+- `classic` (legacy DT4862 / classic Voltronic-like behavior)
+- `vmii_max` (newer DT4862L / `VMII-6200` behavior)
+
+The integration defaults to `auto` detection by querying `QMN`. If the reported model name starts with `VMII-`, the integration switches to the `vmii_max` behavior automatically. You can still force the protocol manually from the config entry options if needed.
+
+### DT4862L / VMII-specific behavior
+
+The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
+
+- `sbu_priority` is not writable on this model. The inverter rejects `POP02` with `NAK`.
+- output source priority is limited to:
+  - `utility_first`
+  - `solar_first`
+- charger source priority is limited to:
+  - `solar_first`
+  - `solar_and_utility`
+  - `solar_only`
+- max total charge current uses `MNCHGCxxx` instead of `MCHGCxxx`
+- the TCP/RS232 bridge can leave stale serial frames queued between requests; the client now drains and matches responses explicitly to avoid mixing `QID`, `QPIGS`, `QPIRI`, or `QPIWS`
+
 ### QPIRI reference
 
 `QPIRI` is parsed as nominal and configuration data in this order:
@@ -121,6 +145,7 @@ The config flow asks for:
 - **Name**: friendly display name
 - **Scan interval**: polling interval in seconds
 - **Timeout**: per-request timeout in seconds
+- **Protocol / model**: `auto`, `classic`, or `vmii_max`
 
 ## Wiring note for EBYTE NE2-D14PE
 
@@ -185,4 +210,5 @@ data:
 - This integration targets the common Voltronic-compatible command set. Clones or firmware variants may expose different commands or fields.
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
+- On `DT4862L` / `VMII-6200`, `sbu_priority` is intentionally hidden from writable options because the inverter rejects `POP02`.
 
