@@ -69,9 +69,10 @@ The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
   - `utility_first`
   - `solar_first`
 - charger source priority is limited to:
+  - `utility_first`
   - `solar_first`
   - `solar_and_utility`
-  - `solar_only`
+- `solar_only` is rejected by this model (`PCP03 -> NAK`)
 - max total charge current uses `MNCHGCxxx` instead of `MCHGCxxx`
 - the TCP/RS232 bridge can leave stale serial frames queued between requests; the client now drains and matches responses explicitly to avoid mixing `QID`, `QPIGS`, `QPIRI`, or `QPIWS`
 
@@ -187,13 +188,13 @@ data:
   mode: sbu_priority
 ```
 
-### Set charger source priority to solar only
+### Set charger source priority to solar and utility
 
 ```yaml
 action: datouboss_tcp.set_charger_source_priority
 data:
   config_entry_id: YOUR_CONFIG_ENTRY_ID
-  mode: solar_only
+  mode: solar_and_utility
 ```
 
 ### Set max AC charge current
@@ -211,4 +212,5 @@ data:
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
 - On `DT4862L` / `VMII-6200`, `sbu_priority` is intentionally hidden from writable options because the inverter rejects `POP02`.
+- On `DT4862L` / `VMII-6200`, `solar_only` is intentionally hidden from charger source priority because `PCP03` is not accepted consistently by the inverter.
 
