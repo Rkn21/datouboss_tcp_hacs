@@ -61,6 +61,7 @@ CHARGER_SOURCE_PRIORITY_OPTIONS_VMII = [
     "utility_first",
     "solar_first",
     "solar_and_utility",
+    "solar_only",
 ]
 
 AC_INPUT_RANGE_MAP = {

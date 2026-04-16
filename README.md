@@ -68,11 +68,12 @@ The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
 - output source priority is limited to:
   - `utility_first`
   - `solar_first`
-- charger source priority is limited to:
+- charger source priority exposed by the integration remains:
   - `utility_first`
   - `solar_first`
   - `solar_and_utility`
-- `solar_only` is rejected by this model (`PCP03 -> NAK`)
+  - `solar_only`
+- vendor documentation for the 6200W platform advertises `Only Solar` charge priority, but on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`) the standard PI30 command `PCP03` still returns `NAK`, including with PV present and while the inverter is in line mode
 - max total charge current uses `MNCHGCxxx` instead of `MCHGCxxx`
 - the TCP/RS232 bridge can leave stale serial frames queued between requests; the client now drains and matches responses explicitly to avoid mixing `QID`, `QPIGS`, `QPIRI`, or `QPIWS`
 
@@ -212,5 +213,5 @@ data:
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
 - On `DT4862L` / `VMII-6200`, `sbu_priority` is intentionally hidden from writable options because the inverter rejects `POP02`.
-- On `DT4862L` / `VMII-6200`, `solar_only` is intentionally hidden from charger source priority because `PCP03` is not accepted consistently by the inverter.
+- On the tested `DT4862L` / `VMII-6200`, `solar_only` is still advertised by vendor docs but the PI30 write command `PCP03` currently returns `NAK`; the integration keeps the option exposed and reports the device rejection if it still occurs on your unit.
 
