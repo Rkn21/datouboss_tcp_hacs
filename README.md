@@ -68,12 +68,12 @@ The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
 - output source priority is limited to:
   - `utility_first`
   - `solar_first`
-- charger source priority exposed by the integration remains:
-  - `utility_first`
-  - `solar_first`
-  - `solar_and_utility`
-  - `solar_only`
-- vendor documentation for the 6200W platform advertises `Only Solar` charge priority, but on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`) the standard PI30 command `PCP03` still returns `NAK`, including with PV present and while the inverter is in line mode
+- charger source priority is VMII-specific:
+  - the front-panel menu exposes `solar_first`, `solar_and_utility`, and `solar_only`
+  - on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`), `PCP03` still returns `NAK`
+  - `solar_only` is nevertheless reachable because the inverter reports it as the same PI30 priority code as `solar_and_utility`, but with `max_ac_charge_current = 2A`
+  - the integration therefore derives `solar_only` from the combined state and writes it as `PCP02` + `MUCHGC002`
+  - `utility_first` is left out of the VMII UI because it is not part of the documented menu for parameter 16 on this model
 - max total charge current uses `MNCHGCxxx` instead of `MCHGCxxx`
 - the TCP/RS232 bridge can leave stale serial frames queued between requests; the client now drains and matches responses explicitly to avoid mixing `QID`, `QPIGS`, `QPIRI`, or `QPIWS`
 
@@ -213,5 +213,5 @@ data:
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
 - On `DT4862L` / `VMII-6200`, `sbu_priority` is intentionally hidden from writable options because the inverter rejects `POP02`.
-- On the tested `DT4862L` / `VMII-6200`, `solar_only` is still advertised by vendor docs but the PI30 write command `PCP03` currently returns `NAK`; the integration keeps the option exposed and reports the device rejection if it still occurs on your unit.
+- On the tested `DT4862L` / `VMII-6200`, `solar_only` is not a distinct PI30 code in practice: the inverter reports the same charge-priority code as `solar_and_utility`, and only differentiates `solar_only` through a `2A` AC charge-current limit.
 

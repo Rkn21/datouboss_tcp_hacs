@@ -21,7 +21,7 @@ from .coordinator import DatoubossRuntimeData
 @dataclass(frozen=True, kw_only=True)
 class DatoubossSelectDescription(SelectEntityDescription):
     current_option_fn: Callable[[Any], str | None]
-    command_fn: Callable[[Any, str], str]
+    command_fn: Callable[[Any, str], str | list[str]]
     options_fn: Callable[[Any], list[str]]
     attributes_fn: Callable[[Any], dict[str, Any] | None] | None = None
     available_fn: Callable[[Any], bool] | None = None
@@ -47,13 +47,14 @@ SELECTS: tuple[DatoubossSelectDescription, ...] = (
         key="charger_source_priority",
         translation_key="charger_source_priority",
         current_option_fn=lambda coordinator: coordinator.data["qpiri"].get("charger_source_priority"),
-        command_fn=lambda coordinator, option: coordinator.build_charger_source_priority_command(option),
+        command_fn=lambda coordinator, option: coordinator.build_charger_source_priority_commands(option),
         options_fn=lambda coordinator: _options_with_current(
             coordinator.get_writable_charger_source_priority_options(),
             coordinator.data["qpiri"].get("charger_source_priority"),
         ),
         attributes_fn=lambda coordinator: {
             "code": coordinator.data["qpiri"].get("charger_source_priority_code"),
+            "max_ac_charge_current": coordinator.data["qpiri"].get("max_ac_charge_current"),
             "writable_options": coordinator.get_writable_charger_source_priority_options(),
             "protocol_variant": coordinator.protocol_variant,
         },
@@ -180,9 +181,11 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
         writable_options = attributes.get("writable_options")
         if writable_options is not None and option not in writable_options:
             raise ValueError(f"Option '{option}' is read-only for this inverter")
-        await self.runtime.coordinator.async_send_write_command(
-            self.entity_description.command_fn(self.runtime.coordinator, option)
-        )
+        commands = self.entity_description.command_fn(self.runtime.coordinator, option)
+        if isinstance(commands, str):
+            await self.runtime.coordinator.async_send_write_command(commands)
+            return
+        await self.runtime.coordinator.async_send_write_commands(commands)
 
 
 def _format_integerish_option(value: Any) -> str | None:
