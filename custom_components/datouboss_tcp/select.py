@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -159,6 +160,10 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
             return None
         return str(value)
 
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self._sync_registry_capabilities()
+
     @property
     def options(self) -> list[str]:
         return self.entity_description.options_fn(self.coordinator)
@@ -183,6 +188,24 @@ class DatoubossSelect(CoordinatorEntity, SelectEntity):
         await self.runtime.coordinator.async_send_write_command(
             self.entity_description.command_fn(self.runtime.coordinator, option)
         )
+
+    def _handle_coordinator_update(self) -> None:
+        self._sync_registry_capabilities()
+        super()._handle_coordinator_update()
+
+    def _sync_registry_capabilities(self) -> None:
+        if self.hass is None or self.entity_id is None:
+            return
+
+        registry = er.async_get(self.hass)
+        if (entry := registry.async_get(self.entity_id)) is None:
+            return
+
+        capabilities = self.capability_attributes
+        if entry.capabilities == capabilities:
+            return
+
+        registry.async_update_entity(self.entity_id, capabilities=capabilities)
 
 
 def _format_integerish_option(value: Any) -> str | None:
