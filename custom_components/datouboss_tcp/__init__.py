@@ -109,11 +109,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])
         mode = call.data[ATTR_MODE]
         try:
-            commands = runtime.coordinator.build_charger_source_priority_commands(mode)
+            command = runtime.coordinator.build_charger_source_priority_command(mode)
         except ValueError as err:
             raise ServiceValidationError(str(err)) from err
-        payloads = await runtime.coordinator.async_send_write_commands(commands)
-        return {"payload": payloads[-1], "payloads": payloads, "mode": mode}
+        payload = await runtime.coordinator.async_send_write_command(command)
+        return {"payload": payload, "mode": mode}
 
     async def async_set_ac_input_range(call: ServiceCall) -> ServiceResponse:
         runtime = _get_loaded_runtime_data(hass, call.data[ATTR_CONFIG_ENTRY_ID])

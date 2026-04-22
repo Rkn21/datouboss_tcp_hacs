@@ -70,9 +70,11 @@ The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
   - `solar_first`
 - charger source priority is VMII-specific:
   - the front-panel menu exposes `solar_first`, `solar_and_utility`, and `solar_only`
-  - on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`), `PCP03` still returns `NAK`
-  - `solar_only` is nevertheless reachable because the inverter reports it as the same PI30 priority code as `solar_and_utility`, but with `max_ac_charge_current = 2A`
-  - the integration therefore derives `solar_only` from the combined state and writes it as `PCP02` + `MUCHGC002`
+  - on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`), the VMII mapping differs from the classic 4-state mapping:
+  - `PCP00 -> solar_first`
+  - `PCP01 -> solar_and_utility`
+  - `PCP02 -> solar_only`
+  - `PCP03` returns `NAK` because it is not used by this model
   - `utility_first` is left out of the VMII UI because it is not part of the documented menu for parameter 16 on this model
 - max total charge current uses `MNCHGCxxx` instead of `MCHGCxxx`
 - the TCP/RS232 bridge can leave stale serial frames queued between requests; the client now drains and matches responses explicitly to avoid mixing `QID`, `QPIGS`, `QPIRI`, or `QPIWS`
@@ -213,5 +215,5 @@ data:
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
 - On `DT4862L` / `VMII-6200`, `sbu_priority` is intentionally hidden from writable options because the inverter rejects `POP02`.
-- On the tested `DT4862L` / `VMII-6200`, `solar_only` is not a distinct PI30 code in practice: the inverter reports the same charge-priority code as `solar_and_utility`, and only differentiates `solar_only` through a `2A` AC charge-current limit.
+- On the tested `DT4862L` / `VMII-6200`, charger source priority uses a VMII-specific 3-state mapping (`00/01/02`) instead of the classic 4-state mapping (`00/01/02/03`).
 

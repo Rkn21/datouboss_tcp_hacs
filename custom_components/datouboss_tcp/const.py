@@ -57,6 +57,14 @@ CHARGER_SOURCE_PRIORITY_MAP = {
 }
 CHARGER_SOURCE_PRIORITY_REVERSE = {value: key for key, value in CHARGER_SOURCE_PRIORITY_MAP.items()}
 CHARGER_SOURCE_PRIORITY_OPTIONS_CLASSIC = list(CHARGER_SOURCE_PRIORITY_MAP.keys())
+CHARGER_SOURCE_PRIORITY_MAP_VMII = {
+    "solar_first": "00",
+    "solar_and_utility": "01",
+    "solar_only": "02",
+}
+CHARGER_SOURCE_PRIORITY_REVERSE_VMII = {
+    value: key for key, value in CHARGER_SOURCE_PRIORITY_MAP_VMII.items()
+}
 CHARGER_SOURCE_PRIORITY_OPTIONS_VMII = [
     "solar_first",
     "solar_and_utility",

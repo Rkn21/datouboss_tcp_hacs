@@ -18,6 +18,8 @@ from .const import (
     BATTERY_TYPE_REVERSE,
     CHARGER_SOURCE_PRIORITY_MAP,
     CHARGER_SOURCE_PRIORITY_REVERSE,
+    CHARGER_SOURCE_PRIORITY_MAP_VMII,
+    CHARGER_SOURCE_PRIORITY_REVERSE_VMII,
     CHARGER_SOURCE_PRIORITY_OPTIONS_CLASSIC,
     CHARGER_SOURCE_PRIORITY_OPTIONS_VMII,
     INVERTER_MODE_MAP,
@@ -67,7 +69,6 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.protocol_variant: str = client.protocol_variant
         self.supported_total_charge_currents: list[int] = []
         self.supported_ac_charge_currents: list[int] = []
-        self._vmii_last_non_solar_only_ac_charge_current: int | None = None
 
     async def _async_setup(self) -> None:
         """Fetch static-ish data once."""
@@ -259,10 +260,7 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 output_priority_code, output_priority_code
             ),
             "charger_source_priority_code": charge_priority_code,
-            "charger_source_priority": self._resolve_charger_source_priority(
-                charge_priority_code,
-                max_ac_charge_current,
-            ),
+            "charger_source_priority": self._resolve_charger_source_priority(charge_priority_code),
             "parallel_max_num": self._to_int(parts, 18),
             "machine_type_code": machine_type_code,
             "machine_type": MACHINE_TYPE_REVERSE.get(machine_type_code, machine_type_code),
@@ -276,7 +274,6 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 pv_ok_condition_code, pv_ok_condition_code
             ),
         }
-        self._track_vmii_ac_charge_current(max_ac_charge_current)
         return data
 
     def _parse_qdi(self, payload: str) -> dict[str, Any]:
@@ -322,9 +319,7 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 output_priority_code, output_priority_code
             ),
             "charger_source_priority_code": charge_priority_code,
-            "charger_source_priority": CHARGER_SOURCE_PRIORITY_REVERSE.get(
-                charge_priority_code, charge_priority_code
-            ),
+            "charger_source_priority": self._resolve_charger_source_priority(charge_priority_code),
             "battery_type_code": battery_type_code,
             "battery_type": BATTERY_TYPE_REVERSE.get(battery_type_code, battery_type_code),
             "output_mode_code": output_mode_code,
@@ -434,72 +429,21 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             },
         }
 
-    def _vmii_min_ac_charge_current(self) -> int:
-        if self.supported_ac_charge_currents:
-            return min(self.supported_ac_charge_currents)
-        return 2
-
-    def _vmii_default_non_solar_only_ac_charge_current(self) -> int:
-        min_current = self._vmii_min_ac_charge_current()
-        if (
-            self._vmii_last_non_solar_only_ac_charge_current is not None
-            and self._vmii_last_non_solar_only_ac_charge_current > min_current
-        ):
-            return self._vmii_last_non_solar_only_ac_charge_current
-
-        for value in sorted(self.supported_ac_charge_currents):
-            if value > min_current:
-                return value
-        return 10
-
-    def _track_vmii_ac_charge_current(self, max_ac_charge_current: int | None) -> None:
-        if self.protocol_variant != PROTOCOL_VMII or max_ac_charge_current is None:
-            return
-        if max_ac_charge_current > self._vmii_min_ac_charge_current():
-            self._vmii_last_non_solar_only_ac_charge_current = max_ac_charge_current
-
-    def _resolve_charger_source_priority(
-        self,
-        charge_priority_code: str | None,
-        max_ac_charge_current: int | None,
-    ) -> str | None:
-        if self.protocol_variant != PROTOCOL_VMII:
-            return CHARGER_SOURCE_PRIORITY_REVERSE.get(charge_priority_code, charge_priority_code)
-
-        if charge_priority_code == CHARGER_SOURCE_PRIORITY_MAP["solar_first"]:
-            return "solar_first"
-        if charge_priority_code == CHARGER_SOURCE_PRIORITY_MAP["solar_and_utility"]:
-            if (
-                max_ac_charge_current is not None
-                and max_ac_charge_current <= self._vmii_min_ac_charge_current()
-            ):
-                return "solar_only"
-            return "solar_and_utility"
-        if charge_priority_code == CHARGER_SOURCE_PRIORITY_MAP["utility_first"]:
-            return "utility_first"
-        if charge_priority_code == CHARGER_SOURCE_PRIORITY_MAP["solar_only"]:
-            return "solar_only"
-        return charge_priority_code
+    def _resolve_charger_source_priority(self, charge_priority_code: str | None) -> str | None:
+        if self.protocol_variant == PROTOCOL_VMII:
+            return CHARGER_SOURCE_PRIORITY_REVERSE_VMII.get(
+                charge_priority_code, charge_priority_code
+            )
+        return CHARGER_SOURCE_PRIORITY_REVERSE.get(charge_priority_code, charge_priority_code)
 
     async def async_send_write_command(self, command: str) -> str:
         """Send a write command and refresh sensors."""
-        payloads = await self.async_send_write_commands([command])
-        return payloads[-1]
-
-    async def async_send_write_commands(self, commands: list[str]) -> list[str]:
-        """Send one or more write commands and refresh sensors."""
-        payloads: list[str] = []
-        for index, command in enumerate(commands):
-            response = await self.client.send_command(command)
-            payloads.append(response.raw_payload)
-
-            if self.protocol_variant == PROTOCOL_VMII and index < len(commands) - 1:
-                await asyncio.sleep(1.5)
+        response = await self.client.send_command(command)
 
         if self.protocol_variant == PROTOCOL_VMII:
             await asyncio.sleep(1.5)
         await self.async_refresh()
-        return payloads
+        return response.raw_payload
 
     async def _async_vmii_query(self, command: str) -> Any:
         last_response = None
@@ -521,11 +465,7 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def get_writable_charger_source_priority_options(self) -> list[str]:
         if self.protocol_variant == PROTOCOL_VMII:
-            options = list(CHARGER_SOURCE_PRIORITY_OPTIONS_VMII)
-            current = self.data["qpiri"].get("charger_source_priority") if self.data else None
-            if current == "utility_first":
-                return ["utility_first", *options]
-            return options
+            return CHARGER_SOURCE_PRIORITY_OPTIONS_VMII
         return CHARGER_SOURCE_PRIORITY_OPTIONS_CLASSIC
 
     def build_output_source_priority_command(self, option: str) -> str:
@@ -536,47 +476,17 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise ValueError(f"Unsupported output source priority '{option}' for this inverter")
         return f"POP{code}"
 
-    def build_charger_source_priority_commands(self, option: str) -> list[str]:
+    def build_charger_source_priority_command(self, option: str) -> str:
         if option not in self.get_writable_charger_source_priority_options():
             raise ValueError(f"Unsupported charger source priority '{option}' for this inverter")
-        if self.protocol_variant != PROTOCOL_VMII:
-            code = CHARGER_SOURCE_PRIORITY_MAP.get(option)
-            if code is None:
-                raise ValueError(f"Unsupported charger source priority '{option}' for this inverter")
-            return [f"PCP{code}"]
-
-        if option == "solar_only":
-            return [
-                f"PCP{CHARGER_SOURCE_PRIORITY_MAP['solar_and_utility']}",
-                self.build_max_ac_charge_current_command(self._vmii_min_ac_charge_current()),
-            ]
-
-        if option == "solar_and_utility":
-            commands = [f"PCP{CHARGER_SOURCE_PRIORITY_MAP['solar_and_utility']}"]
-            current_ac_charge = self.data["qpiri"].get("max_ac_charge_current") if self.data else None
-            if (
-                current_ac_charge is not None
-                and current_ac_charge <= self._vmii_min_ac_charge_current()
-            ):
-                commands.append(
-                    self.build_max_ac_charge_current_command(
-                        self._vmii_default_non_solar_only_ac_charge_current()
-                    )
-                )
-            return commands
-
-        code = CHARGER_SOURCE_PRIORITY_MAP.get(option)
+        code = (
+            CHARGER_SOURCE_PRIORITY_MAP_VMII.get(option)
+            if self.protocol_variant == PROTOCOL_VMII
+            else CHARGER_SOURCE_PRIORITY_MAP.get(option)
+        )
         if code is None:
             raise ValueError(f"Unsupported charger source priority '{option}' for this inverter")
-        return [f"PCP{code}"]
-
-    def build_charger_source_priority_command(self, option: str) -> str:
-        commands = self.build_charger_source_priority_commands(option)
-        if len(commands) != 1:
-            raise ValueError(
-                f"Charger source priority '{option}' requires multiple commands on this inverter"
-            )
-        return commands[0]
+        return f"PCP{code}"
 
     def build_ac_input_range_command(self, option: str) -> str:
         code = AC_INPUT_RANGE_MAP.get(option)
