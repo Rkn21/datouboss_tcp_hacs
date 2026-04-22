@@ -475,11 +475,22 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def build_output_source_priority_command(self, option: str) -> str:
         if option not in self.get_writable_output_source_priority_options():
-            raise ValueError(f"Unsupported output source priority '{option}' for this inverter")
+            if self.protocol_variant == PROTOCOL_VMII:
+                normalized_option = {
+                    "sub": "SUB",
+                    "sub_priority": "SUB",
+                    "sbu": "SBU",
+                    "sbu_priority": "SBU",
+                }.get(option.lower(), option)
+            else:
+                normalized_option = option
+        else:
+            normalized_option = option
+
         code = (
-            OUTPUT_SOURCE_PRIORITY_MAP_VMII.get(option)
+            OUTPUT_SOURCE_PRIORITY_MAP_VMII.get(normalized_option)
             if self.protocol_variant == PROTOCOL_VMII
-            else OUTPUT_SOURCE_PRIORITY_MAP.get(option)
+            else OUTPUT_SOURCE_PRIORITY_MAP.get(normalized_option)
         )
         if code is None:
             raise ValueError(f"Unsupported output source priority '{option}' for this inverter")

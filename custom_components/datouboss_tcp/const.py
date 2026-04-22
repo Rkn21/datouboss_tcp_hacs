@@ -45,15 +45,15 @@ OUTPUT_SOURCE_PRIORITY_MAP = {
 OUTPUT_SOURCE_PRIORITY_REVERSE = {value: key for key, value in OUTPUT_SOURCE_PRIORITY_MAP.items()}
 OUTPUT_SOURCE_PRIORITY_OPTIONS_CLASSIC = list(OUTPUT_SOURCE_PRIORITY_MAP.keys())
 OUTPUT_SOURCE_PRIORITY_MAP_VMII = {
-    "sub_priority": "00",
-    "sbu_priority": "01",
+    "SUB": "00",
+    "SBU": "01",
 }
 OUTPUT_SOURCE_PRIORITY_REVERSE_VMII = {
     value: key for key, value in OUTPUT_SOURCE_PRIORITY_MAP_VMII.items()
 }
 OUTPUT_SOURCE_PRIORITY_OPTIONS_VMII = [
-    "sub_priority",
-    "sbu_priority",
+    "SUB",
+    "SBU",
 ]
 
 CHARGER_SOURCE_PRIORITY_MAP = {

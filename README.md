@@ -67,8 +67,8 @@ The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
 - output source priority is VMII-specific:
   - the front-panel menu exposes `SUB` and `SBU`
   - on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`), the VMII mapping differs from the classic 3-state mapping:
-  - `POP00 -> sub_priority`
-  - `POP01 -> sbu_priority`
+  - `POP00 -> SUB`
+  - `POP01 -> SBU`
   - `POP02` returns `NAK` because it is not used by this model
 - charger source priority is VMII-specific:
   - the front-panel menu exposes `solar_first`, `solar_and_utility`, and `solar_only`
@@ -115,7 +115,7 @@ Known interpretations used by the integration include:
 - Battery type: `0=agm`, `1=flooded`, `2=user`, `3=lithium`
 - AC input range: `00=appliance`, `01=ups`
 - Output source priority (classic): `00=utility_first`, `01=solar_first`, `02=sbu_priority`
-- Output source priority (VMII-6200): `00=sub_priority`, `01=sbu_priority`
+- Output source priority (VMII-6200): `00=SUB`, `01=SBU`
 - Charger source priority (classic): `00=utility_first`, `01=solar_first`, `02=solar_and_utility`, `03=solar_only`
 - Charger source priority (VMII-6200): `00=solar_first`, `01=solar_and_utility`, `02=solar_only`
 - Machine type: `00=grid_tie`, `01=off_grid`, `10=hybrid`
