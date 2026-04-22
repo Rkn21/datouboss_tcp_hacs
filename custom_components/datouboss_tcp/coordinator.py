@@ -26,6 +26,8 @@ from .const import (
     MACHINE_TYPE_REVERSE,
     OUTPUT_SOURCE_PRIORITY_MAP,
     OUTPUT_SOURCE_PRIORITY_REVERSE,
+    OUTPUT_SOURCE_PRIORITY_MAP_VMII,
+    OUTPUT_SOURCE_PRIORITY_REVERSE_VMII,
     OUTPUT_SOURCE_PRIORITY_OPTIONS_CLASSIC,
     OUTPUT_SOURCE_PRIORITY_OPTIONS_VMII,
     OUTPUT_MODE_REVERSE,
@@ -256,9 +258,7 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "ac_input_range_code": ac_input_range_code,
             "ac_input_range": AC_INPUT_RANGE_REVERSE.get(ac_input_range_code, ac_input_range_code),
             "output_source_priority_code": output_priority_code,
-            "output_source_priority": OUTPUT_SOURCE_PRIORITY_REVERSE.get(
-                output_priority_code, output_priority_code
-            ),
+            "output_source_priority": self._resolve_output_source_priority(output_priority_code),
             "charger_source_priority_code": charge_priority_code,
             "charger_source_priority": self._resolve_charger_source_priority(charge_priority_code),
             "parallel_max_num": self._to_int(parts, 18),
@@ -315,9 +315,7 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "ac_input_range_code": ac_input_range_code,
             "ac_input_range": AC_INPUT_RANGE_REVERSE.get(ac_input_range_code, ac_input_range_code),
             "output_source_priority_code": output_priority_code,
-            "output_source_priority": OUTPUT_SOURCE_PRIORITY_REVERSE.get(
-                output_priority_code, output_priority_code
-            ),
+            "output_source_priority": self._resolve_output_source_priority(output_priority_code),
             "charger_source_priority_code": charge_priority_code,
             "charger_source_priority": self._resolve_charger_source_priority(charge_priority_code),
             "battery_type_code": battery_type_code,
@@ -429,6 +427,13 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             },
         }
 
+    def _resolve_output_source_priority(self, output_priority_code: str | None) -> str | None:
+        if self.protocol_variant == PROTOCOL_VMII:
+            return OUTPUT_SOURCE_PRIORITY_REVERSE_VMII.get(
+                output_priority_code, output_priority_code
+            )
+        return OUTPUT_SOURCE_PRIORITY_REVERSE.get(output_priority_code, output_priority_code)
+
     def _resolve_charger_source_priority(self, charge_priority_code: str | None) -> str | None:
         if self.protocol_variant == PROTOCOL_VMII:
             return CHARGER_SOURCE_PRIORITY_REVERSE_VMII.get(
@@ -471,7 +476,11 @@ class DatoubossCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def build_output_source_priority_command(self, option: str) -> str:
         if option not in self.get_writable_output_source_priority_options():
             raise ValueError(f"Unsupported output source priority '{option}' for this inverter")
-        code = OUTPUT_SOURCE_PRIORITY_MAP.get(option)
+        code = (
+            OUTPUT_SOURCE_PRIORITY_MAP_VMII.get(option)
+            if self.protocol_variant == PROTOCOL_VMII
+            else OUTPUT_SOURCE_PRIORITY_MAP.get(option)
+        )
         if code is None:
             raise ValueError(f"Unsupported output source priority '{option}' for this inverter")
         return f"POP{code}"

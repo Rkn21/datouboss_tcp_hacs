@@ -64,10 +64,12 @@ The integration defaults to `auto` detection by querying `QMN`. If the reported 
 
 The newer `DATOUBOSS DT4862L` does not behave exactly like the older `DT4862`:
 
-- `sbu_priority` is not writable on this model. The inverter rejects `POP02` with `NAK`.
-- output source priority is limited to:
-  - `utility_first`
-  - `solar_first`
+- output source priority is VMII-specific:
+  - the front-panel menu exposes `SUB` and `SBU`
+  - on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`), the VMII mapping differs from the classic 3-state mapping:
+  - `POP00 -> sub_priority`
+  - `POP01 -> sbu_priority`
+  - `POP02` returns `NAK` because it is not used by this model
 - charger source priority is VMII-specific:
   - the front-panel menu exposes `solar_first`, `solar_and_utility`, and `solar_only`
   - on the tested `VMII-6200` unit (`QPI=PI30`, `QVFW=VERFW:00040.09`), the VMII mapping differs from the classic 4-state mapping:
@@ -112,8 +114,10 @@ Known interpretations used by the integration include:
 
 - Battery type: `0=agm`, `1=flooded`, `2=user`, `3=lithium`
 - AC input range: `00=appliance`, `01=ups`
-- Output source priority: `00=utility_first`, `01=solar_first`, `02=sbu_priority`
-- Charger source priority: `00=utility_first`, `01=solar_first`, `02=solar_and_utility`, `03=solar_only`
+- Output source priority (classic): `00=utility_first`, `01=solar_first`, `02=sbu_priority`
+- Output source priority (VMII-6200): `00=sub_priority`, `01=sbu_priority`
+- Charger source priority (classic): `00=utility_first`, `01=solar_first`, `02=solar_and_utility`, `03=solar_only`
+- Charger source priority (VMII-6200): `00=solar_first`, `01=solar_and_utility`, `02=solar_only`
 - Machine type: `00=grid_tie`, `01=off_grid`, `10=hybrid`
 - Topology: `0=transformerless`, `1=transformer`
 - Output mode: `0=single_machine`, `1=parallel_output`, `2=phase_1_of_3_phase`, `3=phase_2_of_3_phase`, `4=phase_3_of_3_phase`
@@ -214,6 +218,6 @@ data:
 - This integration targets the common Voltronic-compatible command set. Clones or firmware variants may expose different commands or fields.
 - The write services do not attempt to expose every possible inverter setting; `send_command` is included for advanced use.
 - The response parser is strict enough for typical `QPIGS` / `QPIRI` frames, but some firmware variants may reorder fields.
-- On `DT4862L` / `VMII-6200`, `sbu_priority` is intentionally hidden from writable options because the inverter rejects `POP02`.
+- On the tested `DT4862L` / `VMII-6200`, output source priority uses a VMII-specific 2-state mapping (`00/01`) instead of the classic 3-state mapping (`00/01/02`).
 - On the tested `DT4862L` / `VMII-6200`, charger source priority uses a VMII-specific 3-state mapping (`00/01/02`) instead of the classic 4-state mapping (`00/01/02/03`).
 
